@@ -5,7 +5,7 @@
 
 * 需要 python3.7 以上版本。
 
-* 安装 requirements.txt 依赖库，```pip install requirements.txt``` (建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装)。
+* 安装 requirements.txt 依赖库，```pip install -r requirements.txt``` (建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装)。
 
 * 运行CoolQ插件，酷Q Air 目录下 CQA.exe。如发生错误，参考下文 **CoolQ 插件使用 注意事项**。
 
@@ -14,6 +14,8 @@
 * 在 csdn_helper 目录下运行 coolq.py ```python coolq.py``` （如果有独立Python环境，请切换到独立环境中运行）。
 
 * 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证功能是否运行成功。
+
+* csdb_helper/db/database.db 是下载信息保存的数据库文件，可使用Sqlite数据库管理软件查看数据。
 
 * 后续会发布 Release 版本以供使用。
 
