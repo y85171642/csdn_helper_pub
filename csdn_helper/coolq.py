@@ -68,8 +68,9 @@ async def handle_msg(context):
         msg += '\n● 查询文件　-find [keyword]'
         msg += '\n● 文件信息　-info [id]'
         msg += '\n● 更多信息　-more'
-        msg += '\n' + '-' * 35
+        msg += '\n' + '-' * 38
         msg += '\n* 直接输入CSDN下载页链接即可下载'
+        msg += '\n* 源码：http://t.cn/EK5Q58Y'
         await bot.send(context, msg)
 
     if cmd == '-user':
