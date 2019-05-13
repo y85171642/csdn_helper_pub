@@ -5,9 +5,9 @@
 
 * 需要 python3.7 以上版本。
 
-* 安装 requirements.txt 依赖库，```pip install -r requirements.txt``` (建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装)。
+* 安装 requirements.txt 依赖库： ```pip install -r requirements.txt``` (建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装)。
 
-* 运行CoolQ插件，酷Q Air 目录下 CQA.exe。如发生错误，参考下文 **CoolQ 插件使用 注意事项**。
+* 运行CoolQ插件：酷Q Air 目录下 CQA.exe。如发生错误，参考下文 **CoolQ 插件使用 注意事项**。
 
 * 配置 csdn_helper/config.ini 配置文件，完成自己想要的配置。
 
