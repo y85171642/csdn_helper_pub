@@ -62,7 +62,7 @@ def init():
 
     options.add_experimental_option("prefs", prefs)
     os.chmod(driver_path, 755)
-    driver = selenium.webdriver.Chrome(options=options, executable_path=driver_path, desired_capabilities=cap)
+    driver = selenium.webdriver.Chrome(options=options, executable_path=_driver_path, desired_capabilities=cap)
     driver.set_window_size(1000, 750)
     reset_timeout()
 
