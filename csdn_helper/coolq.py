@@ -135,27 +135,28 @@ async def handle_msg(context):
                 msg = build_download_detail_info(result)
                 await bot.send(context, msg)
 
-    if helper.is_busy():
-        await bot.send(context, '资源正在下载中，请稍后...')
-        return
-
     download_url = find_csdn_download_url(context['message'])
     if download_url is not None:
+        if helper.is_busy():
+            await bot.send(context, '资源正在下载中，请稍后...')
+            return
         await bot.send(context, '开始下载...')
-        helper.init()
-        qq_num = context['sender']['user_id']
-        qq_name = context['sender']['nickname']
-        if 'card' in context['sender'] and context['sender']['card'] != '':
-            qq_name = context['sender']['card']
-        download_info = helper.auto_download(download_url, qq_num, qq_name)
-        helper.dispose()
-        msg = download_info['message']
-        if download_info['success']:
-            result = db_helper.get_download(download_info['info']['id'])
-            msg = build_download_info(result)
-            last_cmd = '-info'
-            last_arg_int = int(result.id)
-        await bot.send(context, msg)
+        try:
+            helper.init()
+            qq_num = context['sender']['user_id']
+            qq_name = context['sender']['nickname']
+            if 'card' in context['sender'] and context['sender']['card'] != '':
+                qq_name = context['sender']['card']
+            download_info = helper.auto_download(download_url, qq_num, qq_name)
+            msg = download_info['message']
+            if download_info['success']:
+                result = db_helper.get_download(download_info['info']['id'])
+                msg = build_download_info(result)
+                last_cmd = '-info'
+                last_arg_int = int(result.id)
+            await bot.send(context, msg)
+        finally:
+            helper.dispose()
 
 
 def build_download_detail_info(result: db_helper.Download):
