@@ -70,7 +70,7 @@ async def handle_msg(context):
         msg += '\n● 更多信息　-more'
         msg += '\n' + '-' * 38
         msg += '\n* 直接输入CSDN下载页链接即可下载'
-        msg += '\n* 源码：http://t.cn/EK5Q58Y'
+        msg += '\n* 大黄鸭源码 http://t.cn/EK5Q58Y'
         await bot.send(context, msg)
 
     if cmd == '-user':
