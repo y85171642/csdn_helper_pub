@@ -23,7 +23,7 @@
 
 * CoolQ 官网 https://cqp.cc/
 
-* CoolQ Python插件 [coolq-http-api](https://github.com/richardchien/python-aiocqhttp)
+* CoolQ Python插件 [python-aiocqhttp](https://github.com/richardchien/python-aiocqhttp)
 
 * CoolQ 插件使用 [注意事项](https://cqhttp.cc/docs/4.10/#/)
 
