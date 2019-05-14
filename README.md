@@ -13,7 +13,7 @@
 
 * 在 csdn_helper 目录下运行 coolq.py ```python coolq.py``` （如果有独立Python环境，请切换到独立环境中运行）。
 
-* 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证功能是否运行成功。
+* 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证是否运行成功。
 
 * csdb_helper/db/database.db 是下载信息保存的数据库文件，可使用Sqlite数据库管理软件查看数据。
 
@@ -21,7 +21,7 @@
 
 ### 2. CoolQ 使用：
 
-* CoolQ官网 https://cqp.cc/
+* CoolQ 官网 https://cqp.cc/
 
 * CoolQ Python插件 [coolq-http-api](https://github.com/richardchien/coolq-http-api)
 
