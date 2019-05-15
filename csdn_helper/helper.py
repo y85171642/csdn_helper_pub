@@ -8,18 +8,10 @@ driver: selenium.webdriver.Chrome
 
 is_driver_busy = False
 
-
-def fix_path(_path):
-    if os.path.isabs(_path):
-        return _path
-    execute_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(execute_dir, _path)
-
-
-zip_save_path = fix_path(config.zip_save_path)
-download_path = fix_path(config.chrome_download_path)
-driver_path = fix_path(config.chrome_driver_path)
-option_path = fix_path(config.chrome_option_path)
+zip_save_path = config.zip_save_path
+download_path = config.chrome_download_path
+driver_path = config.chrome_driver_path
+option_path = config.chrome_option_path
 
 
 def create_dir():
@@ -121,8 +113,9 @@ def set_window_size(width, height):
 def dispose():
     global driver
     global is_driver_busy
-    driver.stop_client()
-    driver.close()
+    if driver is not None:
+        driver.stop_client()
+        driver.close()
     is_driver_busy = False
 
 

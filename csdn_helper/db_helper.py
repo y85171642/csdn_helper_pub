@@ -1,7 +1,11 @@
 from peewee import *
 import datetime
 import config
+import os
 
+db_dir = os.path.dirname(config.sqlite_db_path)
+if not os.path.exists(db_dir):
+    os.mkdir(db_dir)
 db = SqliteDatabase(config.sqlite_db_path)
 
 
