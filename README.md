@@ -1,6 +1,10 @@
 # CSDN Helper
 #### QQ机器人自动下载CSDN资源
 
+### 0. Release 版本下载：
+* [https://github.com/y85171642/csdn_helper_pub/releases/latest](https://github.com/y85171642/csdn_helper_pub/releases/latest)
+* 使用方法参考下载包中的 **使用说明** 。
+
 ### 1. CSDN Helper 使用方法：
 
 * 需要 python3.7 以上版本。
@@ -16,8 +20,6 @@
 * 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证是否运行成功。
 
 * csdb_helper/db/database.db 是下载信息保存的数据库文件，可使用Sqlite数据库管理软件查看数据。
-
-* 后续会发布 Release 版本以供使用。
 
 ### 2. CoolQ 使用：
 
