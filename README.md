@@ -1,7 +1,8 @@
 # CSDN Helper
 #### QQ机器人自动下载CSDN资源
 
-## [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest) *使用方法参考下载包中的 【使用说明】* 
+## [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest) 
+*使用方法参考下载包中的 【使用说明】* 
 
 ## 1. 开发环境：
 
