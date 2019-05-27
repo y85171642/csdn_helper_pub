@@ -53,7 +53,7 @@ def init():
     cap["pageLoadStrategy"] = "none"
 
     options.add_experimental_option("prefs", prefs)
-    os.chmod(driver_path, 755)
+    os.chmod(_driver_path, 755)
     driver = selenium.webdriver.Chrome(options=options, executable_path=_driver_path, desired_capabilities=cap)
     driver.set_window_size(1000, 750)
     reset_timeout()
@@ -137,11 +137,11 @@ def auto_login():
         find('//input[@id="all"]').clear()
         find('//input[@id="all"]').send_keys(config.account)
         time.sleep(1)
-        find('//*[@id="app"]/div/div/div/div[2]').click()
+        find('//div[@class="main-login"]').click()
         find('//input[@id="password-number"]').clear()
         find('//input[@id="password-number"]').send_keys(config.password)
         time.sleep(1)
-        find('//*[@id="app"]/div/div/div/div[2]/div[4]/form/div/div[6]/div/button').click()
+        find('//button[@class="btn btn-primary"]').click()
         time.sleep(3)
 
         if driver.current_url == 'https://passport.csdn.net/sign':
