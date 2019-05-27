@@ -1,11 +1,10 @@
 # CSDN Helper
 #### QQ机器人自动下载CSDN资源
 
-### 0. 最新版本下载：
-* [https://github.com/y85171642/csdn_helper_pub/releases/latest](https://github.com/y85171642/csdn_helper_pub/releases/latest)
+### [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest)
 * 使用方法参考下载包中的 **使用说明** 。
 
-### 1. CSDN Helper 使用方法：
+### 1. 二次开发方法：
 
 * 需要 python3.7 以上版本。
 
