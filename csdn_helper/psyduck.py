@@ -329,7 +329,7 @@ async def handle_group_increase(context):
                    message='欢迎【{}】加入本群～\n友情提示：{}可以免费下载CSDN资源哦！\n-help 查看帮助'.format(name, config.default_qq_name),
                    at_sender=False, auto_escape=True)
 
-
+'''
 @bot.on_request('group')
 # 上面这句等价于 @bot.on('request.group', 'request.friend')
 async def handle_group_request(context):
@@ -337,6 +337,7 @@ async def handle_group_request(context):
         return {'approve': True}
     # 验证信息不符，拒绝
     return {'approve': False, 'reason': '请输入正确的入群口令'}
+'''
 
 if __name__ == '__main__':
     bot.run(host='127.0.0.1', port=config.psyduck_port)
