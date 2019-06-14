@@ -296,6 +296,8 @@ def build_donors(start_index=0):
         name = build_name_str(donor['name'])
         rmb = donor['money']
         msg += '\n{}\t￥{}'.format(name, rmb)
+        msg += '\n' + '-' * 60
+        msg += '\n-more 获取更多信息'
     return msg
 
 

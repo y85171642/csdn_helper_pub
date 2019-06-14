@@ -90,4 +90,5 @@ donate_list = [
     {'qq': '656669204', 'name': '清和', 'money': 5},
     {'qq': '1258586900', 'name': '志远', 'money': 200},
     {'qq': '454625731', 'name': 'nagatoyuki', 'money': 5},
+    {'qq': '619825885', 'name': '≮阿→德≯', 'money': 5},
 ]
