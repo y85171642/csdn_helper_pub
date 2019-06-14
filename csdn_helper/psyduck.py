@@ -84,6 +84,14 @@ async def handle_msg(context):
     arg_int_2 = int(args[1]) if len(args) > 1 and is_all_number(args[1]) else 0
     arg_str = args[0] if len(args) > 0 else ''
 
+    qq_num = context['sender']['user_id']
+    qq_name = context['sender']['nickname']
+    if 'card' in context['sender'] and context['sender']['card'] != '':
+        qq_name = context['sender']['card']
+    qq_group = -1
+    if 'qq_group' in context:
+        qq_group = context['qq_group']
+
     if cmd == '-help' or cmd == '-?':
         msg = '● 用户信息　-user'
         msg += '\n● 排行榜　　-rank [index]'
@@ -139,6 +147,16 @@ async def handle_msg(context):
         else:
             await bot.send(context, '文件不存在。')
 
+    if cmd == '-donors':
+        msg = build_donors(arg_int)
+        last_cmd = cmd
+        last_arg_int = arg_int
+        await bot.send(context, msg)
+
+    if cmd == '-personal':
+        msg = build_personal(qq_num, qq_name)
+        await bot.send(context, msg)
+
     if cmd == '-more':
         if last_cmd == '-find':
             last_arg_int += 10
@@ -156,8 +174,14 @@ async def handle_msg(context):
             if result is not None:
                 msg = build_download_detail_info(result)
                 await bot.send(context, msg)
+        if last_cmd == '-donors':
+            last_arg_int += 10
+            msg = build_donors(last_arg_int)
+            await bot.send(context, msg)
         if last_cmd == '-help':
-            msg = '● 　-user'
+            msg = '捐赠名单　-donors'
+            msg += '个人信息　-personal'
+            msg += '\n' + '-' * 38
             await bot.send(context, msg)
 
     download_id = find_csdn_download_id(context['message'])
@@ -169,14 +193,6 @@ async def handle_msg(context):
 
     download_url = find_csdn_download_url(context['message'])
     if download_url is not None:
-        qq_num = context['sender']['user_id']
-        qq_name = context['sender']['nickname']
-        qq_group = -1
-        if 'qq_group' in context:
-            qq_group = context['qq_group']
-        if 'card' in context['sender'] and context['sender']['card'] != '':
-            qq_name = context['sender']['card']
-
         can_download, msg = helper.check_download_limit(qq_num, qq_group)
         if not can_download:
             await bot.send(context, msg)
@@ -253,15 +269,56 @@ def build_rank_msg(result, start_index=0):
     msg = '排行榜（{}~{}）：'.format(start_index + 1, start_index + len(result))
     index = start_index + 1
     for fo in result:
-        name = fo[1]['name']
-        txt_len = len(name)
-        txt_len_utf8 = len(name.encode('utf-8'))
-        size = int((txt_len_utf8 - txt_len) / 4 + txt_len / 2)
-        name = '【{}】{}'.format(name, (10 - size) * '　')
+        name = build_name_str(fo[1]['name'])
         msg += '\n{}.{}\t{}次\t(共消耗{}积分)'.format(index, name, fo[1]['count'], fo[1]['coin'])
         index += 1
     msg += '\n' + '-' * 60
     msg += '\n-more 获取更多信息'
+    return msg
+
+
+def build_name_str(name):
+    txt_len = len(name)
+    txt_len_utf8 = len(name.encode('utf-8'))
+    size = int((txt_len_utf8 - txt_len) / 4 + txt_len / 2)
+    name = '【{}】{}'.format(name, (10 - size) * '　')
+    return name
+
+
+def build_donors(start_index=0):
+    if start_index >= len(config.donate_list):
+        return '没有更多信息了。'
+    _len = min(10, len(config.donate_list) - start_index)
+    msg = '捐赠名单（{}~{}）：'.format(start_index + 1, start_index + _len)
+    for i in range(start_index, start_index + _len):
+        donor = config.donate_list[i]
+        name = build_name_str(donor['name'])
+        rmb = donor['money']
+        msg += '\n{}\t$￥{}'.format(name, rmb)
+    return msg
+
+
+def build_personal(qq, name):
+    msg = '{}'.format(name)
+    vip_level = 0
+    money = 0
+    for donor in config.donate_list:
+        if donor['qq'] == qq:
+            money = donor['money']
+            if donor['money'] >= 100:
+                vip_level = 2
+            else:
+                vip_level = 1
+            break
+    if vip_level == 2:
+        msg += '【SVIP】'
+    elif vip_level == 1:
+        msg += '【VIP】'
+    else:
+        msg += '【普通】'
+
+    msg += '\n每日下载次数：{}次'.format(1 + int(money))
+    msg += '\n每月现在次数：{}次'.format(10 + int(money) * 2)
     return msg
 
 
