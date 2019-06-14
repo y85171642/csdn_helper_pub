@@ -40,6 +40,7 @@ password = get_cfg('csdn_password')
 default_qq = get_cfg('default_qq')
 default_qq_name = get_cfg('default_qq_name')
 need_at_me = str_to_bool(get_cfg('need_at_me'))
+psyduck_port = int(get_cfg('psyduck_port'))
 
 chrome_driver_path = frozen_path(get_cfg('chrome_driver_path'))
 chrome_option_path = frozen_path(get_cfg('chrome_option_path'))

@@ -49,13 +49,6 @@ def rm_at_me(message):
 @bot.on_message
 # 上面这句等价于 @bot.on('message')
 async def handle_msg(context):
-    # 下面这句等价于 bot.send_private_msg(user_id=context['user_id'], message='你好呀，下面一条是你刚刚发的：')
-    """
-    try:
-         await bot.send(context, '你好呀，下面一条是你刚刚发的：')
-     except ApiError:
-         pass
-    """
     global last_cmd
     global last_arg_str
     global last_arg_int
@@ -337,15 +330,13 @@ async def handle_group_increase(context):
                    at_sender=False, auto_escape=True)
 
 
-'''
-@bot.on_request('group', 'friend')
+@bot.on_request('group')
 # 上面这句等价于 @bot.on('request.group', 'request.friend')
 async def handle_group_request(context):
-    if context['message'] != 'some-secret':
-        # 验证信息不符，拒绝
-        return {'approve': False, 'reason': '你填写的验证信息有误'}
-    return {'approve': True}
-'''
+    if context['message'] == 'Psyduck~':
+        return {'approve': True}
+    # 验证信息不符，拒绝
+    return {'approve': False, 'reason': '请输入正确的入群口令'}
 
 if __name__ == '__main__':
-    bot.run(host='127.0.0.1', port=8800)
+    bot.run(host='127.0.0.1', port=config.psyduck_port)
