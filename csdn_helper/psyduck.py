@@ -84,13 +84,13 @@ async def handle_msg(context):
     arg_int_2 = int(args[1]) if len(args) > 1 and is_all_number(args[1]) else 0
     arg_str = args[0] if len(args) > 0 else ''
 
-    qq_num = context['sender']['user_id']
+    qq_num = str(context['sender']['user_id'])
     qq_name = context['sender']['nickname']
     if 'card' in context['sender'] and context['sender']['card'] != '':
         qq_name = context['sender']['card']
-    qq_group = -1
+    qq_group = '-1'
     if 'qq_group' in context:
-        qq_group = context['qq_group']
+        qq_group = str(context['qq_group'])
 
     if cmd == '-help' or cmd == '-?':
         msg = '● 用户信息　-user'
