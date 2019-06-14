@@ -180,8 +180,8 @@ async def handle_msg(context):
             msg = build_donors(last_arg_int)
             await bot.send(context, msg)
         if last_cmd == '-help':
-            msg = '捐赠名单　-donors'
-            msg += '个人信息　-personal'
+            msg = '● 捐赠名单　-donors'
+            msg += '\n● 个人信息　-personal'
             msg += '\n' + '-' * 38
             await bot.send(context, msg)
 
