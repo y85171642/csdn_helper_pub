@@ -294,7 +294,7 @@ def build_donors(start_index=0):
         donor = config.donate_list[i]
         name = build_name_str(donor['name'])
         rmb = donor['money']
-        msg += '\n{}\t$￥{}'.format(name, rmb)
+        msg += '\n{}\t￥{}'.format(name, rmb)
     return msg
 
 
@@ -318,7 +318,7 @@ def build_personal(qq, name):
         msg += '【普通】'
 
     msg += '\n每日下载次数：{}次'.format(1 + int(money))
-    msg += '\n每月现在次数：{}次'.format(10 + int(money) * 2)
+    msg += '\n每月下载次数：{}次'.format(10 + int(money) * 2)
     return msg
 
 
