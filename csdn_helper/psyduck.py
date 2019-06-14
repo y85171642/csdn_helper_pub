@@ -24,9 +24,26 @@ def find_csdn_download_url(text):
     return None
 
 
+def find_csdn_download_id(text):
+    url = find_csdn_download_url(text)
+    if url is not None:
+        return url[url.rfind('/') + 1:]
+    return None
+
+
 last_cmd = ''
 last_arg_int = 0
 last_arg_str = ''
+
+
+def is_at_me(message):
+    if message.find('[CQ:at,qq=%s]' % config.default_qq) != -1:
+        return True
+    return False
+
+
+def rm_at_me(message):
+    return message.replace('[CQ:at,qq=%s]' % config.default_qq, '')
 
 
 @bot.on_message
@@ -43,8 +60,13 @@ async def handle_msg(context):
     global last_arg_str
     global last_arg_int
     message = context['message']
-    if message.startswith('@{}'.format(config.default_qq_name)):
-        message = message[4:]
+
+    if config.need_at_me:
+        if not is_at_me(message):
+            return
+    if is_at_me(message):
+        message = rm_at_me(message)
+
     message = message.strip()
     cmd_args = message.split(' ')
     cmd = cmd_args[0]
@@ -121,7 +143,7 @@ async def handle_msg(context):
         if last_cmd == '-find':
             last_arg_int += 10
             result = db_helper.find_all(last_arg_str, last_arg_int)
-            count = db_helper.count_all(arg_str)
+            count = db_helper.count_all(last_arg_str)
             msg = build_find_msg(result, count, last_arg_int)
             await bot.send(context, msg)
         if last_cmd == '-rank':
@@ -134,20 +156,39 @@ async def handle_msg(context):
             if result is not None:
                 msg = build_download_detail_info(result)
                 await bot.send(context, msg)
+        if last_cmd == '-help':
+            msg = '● 　-user'
+            await bot.send(context, msg)
+
+    download_id = find_csdn_download_id(context['message'])
+    if download_id is not None:
+        if helper.__already_download(download_id) and db_helper.exist_download(download_id):
+            msg = build_download_info(db_helper.get_download(download_id))
+            await bot.send(context, msg)
+            return
 
     download_url = find_csdn_download_url(context['message'])
     if download_url is not None:
+        qq_num = context['sender']['user_id']
+        qq_name = context['sender']['nickname']
+        qq_group = -1
+        if 'qq_group' in context:
+            qq_group = context['qq_group']
+        if 'card' in context['sender'] and context['sender']['card'] != '':
+            qq_name = context['sender']['card']
+
+        can_download, msg = helper.check_download_limit(qq_num, qq_group)
+        if not can_download:
+            await bot.send(context, msg)
+            return
+
         if helper.is_busy():
             await bot.send(context, '资源正在下载中，请稍后...')
             return
         await bot.send(context, '开始下载...')
         try:
             helper.init()
-            qq_num = context['sender']['user_id']
-            qq_name = context['sender']['nickname']
-            if 'card' in context['sender'] and context['sender']['card'] != '':
-                qq_name = context['sender']['card']
-            download_info = helper.auto_download(download_url, qq_num, qq_name)
+            download_info = helper.auto_download(download_url, qq_num, qq_name, qq_group)
             msg = download_info['message']
             if download_info['success']:
                 result = db_helper.get_download(download_info['info']['id'])

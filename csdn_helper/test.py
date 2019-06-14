@@ -8,12 +8,10 @@ def stop():
 
 def test():
     try:
-        helper.init()
-        print(helper.get_user_info())
-        print(helper.auto_download('https://download.csdn.net/download/ozhy111/10880596'))
-        print(helper.auto_download('https://download.csdn.net/download/wjf8882300/10879204'))
-        print(helper.auto_download('https://download.csdn.net/download/yeyuxingyun/3455948'))
-        print(helper.auto_download('https://download.csdn.net/download/u013363856/9783561'))
+        print(helper.check_download_limit(45671948, 623597263))
+        # helper.init()
+        # print(helper.get_user_info())
+        # print(helper.auto_download('https://download.csdn.net/download/cnhww/11153341'))
     finally:
         helper.dispose()
 

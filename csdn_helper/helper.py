@@ -4,7 +4,7 @@ import platform
 import os
 import config
 
-driver: selenium.webdriver.Chrome
+driver: selenium.webdriver.Chrome = None
 
 is_driver_busy = False
 
@@ -116,6 +116,7 @@ def dispose():
     if driver is not None:
         driver.stop_client()
         driver.close()
+        driver = None
     is_driver_busy = False
 
 
@@ -131,6 +132,10 @@ def auto_login():
         print('自动登录...')
         if driver.current_url != 'https://passport.csdn.net/login':
             get('https://passport.csdn.net/login')
+
+        input("请手动登录，并按任意键继续...")
+        print('验证完成！尝试重新登录中...')
+        continue
 
         find('//div[@class="main-select"]/ul/li[2]/a').click()
         time.sleep(1)
@@ -164,7 +169,7 @@ def auto_login():
             print('账户登录成功！')
 
 
-def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name):
+def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name, qq_group=-1):
     step = 'begin download'
     try:
         step = 'url cut #'
@@ -180,6 +185,7 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name)
 
         step = 'get url'
         get(url)
+        time.sleep(3)
 
         step = 'valid page'
         if find('//div[@class="error_text"]') is not None:
@@ -190,6 +196,7 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name)
         info['url'] = url
         info['qq_num'] = qq_num
         info['qq_name'] = qq_name
+        info['qq_group'] = qq_group
 
         step = 'check already download'
         if __already_download(info['id']):
@@ -270,9 +277,20 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name)
 
 def __valid_download_url(url):
     import requests
+    # 暂时屏蔽验证
+    return True
     if requests.get(url).text.find('<div class="download_l fl" id="detail_down_l">') != -1:
         return True
     return False
+
+
+def check_download_limit(qq_num, qq_group):
+    import db_helper
+    if db_helper.count_today(qq_num, qq_group) >= 1:
+        return False, "您今日下载次数已达到上限（1）次，请明日再来下载！"
+    if db_helper.count_month(qq_num, qq_group) >= 10:
+        return False, "您本月下载次数已达到上限（10）次，请下月再来下载！"
+    return True, ""
 
 
 def __get_download_info():
@@ -367,6 +385,7 @@ def get_user_info():
     try:
         auto_login()
         get('https://download.csdn.net/my/vip')
+        time.sleep(2)
         name = find('//div[@class="name"]/span').text.strip()
         is_vip = find('//a[@class="btn_vipsign"]') is None
         info = {

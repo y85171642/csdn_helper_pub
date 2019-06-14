@@ -25,6 +25,7 @@ class Download(Model):
     stars = IntegerField(null=True)
     upload_date = DateTimeField(null=True)
     qq_num = CharField(null=True)
+    qq_group = CharField(null=True)
     qq_name = CharField(null=True)
     created_date = DateTimeField(null=True)
 
@@ -39,7 +40,7 @@ def insert_download(info):
     result = Download.create(id=info['id'], url=info['url'], title=info['title'], type=info['type'], coin=info['coin'],
                              stars=info['stars'], size=info['size'], tag=info['tag'], description=info['description'],
                              filename=info['filename'], upload_date=info['upload_date'], qq_num=info['qq_num'],
-                             qq_name=info['qq_name'], created_date=datetime.datetime.now())
+                             qq_name=info['qq_name'], qq_group=info['qq_group'], created_date=datetime.datetime.now())
     return result
 
 
@@ -64,6 +65,21 @@ def count_all(keyword):
     if keyword == '':
         return Download.select().count()
     return Download.select().where(Download.title.contains(keyword)).count()
+
+
+def count_today(qq_num, qq_group):
+    check_table()
+    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
+                                   & (Download.created_date.year == datetime.datetime.now().year)
+                                   & (Download.created_date.month == datetime.datetime.now().month)
+                                   & (Download.created_date.day == datetime.datetime.now().day)).count()
+
+
+def count_month(qq_num, qq_group):
+    check_table()
+    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
+                                   & (Download.created_date.year == datetime.datetime.now().year)
+                                   & (Download.created_date.month == datetime.datetime.now().month)).count()
 
 
 def rank_qq(start_index=0, count=10):
