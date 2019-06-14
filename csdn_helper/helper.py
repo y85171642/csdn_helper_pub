@@ -286,10 +286,17 @@ def __valid_download_url(url):
 
 def check_download_limit(qq_num, qq_group):
     import db_helper
+    money = 0
+    for donor in config.donate_list:
+        if donor['qq'] == qq_num:
+            money = donor['money']
+            break
     if db_helper.count_today(qq_num, qq_group) >= 1:
-        return False, "您今日下载次数已达到上限（1）次，请明日再来下载！"
+        count = (int(money) + config.default_daily_download_count)
+        return False, "您今日下载次数已达到上限（%d）次，请明日再来下载！" % count
     if db_helper.count_month(qq_num, qq_group) >= 10:
-        return False, "您本月下载次数已达到上限（10）次，请下月再来下载！"
+        count = (int(money * 2) + config.default_monthly_download_count)
+        return False, "您本月下载次数已达到上限（%d）次，请下月再来下载！" % count
     return True, ""
 
 

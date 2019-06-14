@@ -317,8 +317,8 @@ def build_personal(qq, name):
     else:
         msg += '【普通】'
 
-    msg += '\n每日下载次数：{}次'.format(1 + int(money))
-    msg += '\n每月下载次数：{}次'.format(10 + int(money) * 2)
+    msg += '\n每日下载次数：{}次'.format(config.default_daily_download_count + int(money))
+    msg += '\n每月下载次数：{}次'.format(config.default_monthly_download_count + int(money * 2))
     return msg
 
 
