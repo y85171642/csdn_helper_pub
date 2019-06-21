@@ -14,7 +14,7 @@
 
 * 配置 csdn_helper/config.ini 配置文件，完成自己想要的配置。
 
-* 在 csdn_helper 目录下运行 coolq.py ```python coolq.py``` （如果有独立Python环境，请切换到独立环境中运行）。
+* 在 csdn_helper 目录下运行 coolq.py ```python psyduck.py``` （如果有独立Python环境，请切换到独立环境中运行）。
 
 * 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证是否运行成功。
 
