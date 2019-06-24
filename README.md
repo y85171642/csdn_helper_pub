@@ -1,5 +1,6 @@
 # CSDN Helper
 #### QQ机器人自动下载CSDN资源
+#### ！！！需要登录个人CSDN账号，使用CSDN积分或者VIP会员下载次数，进行下载。并非无积分下载。
 
 ## [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest) 
 *使用方法参考下载包中的 【使用说明】* 
