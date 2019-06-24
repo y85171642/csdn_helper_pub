@@ -82,8 +82,8 @@ async def handle_msg(context):
     if 'card' in context['sender'] and context['sender']['card'] != '':
         qq_name = context['sender']['card']
     qq_group = '-1'
-    if 'qq_group' in context:
-        qq_group = str(context['qq_group'])
+    if 'group_id' in context:
+        qq_group = str(context['group_id'])
 
     if cmd == '-help' or cmd == '-?':
         msg = '● 用户信息　-user'
