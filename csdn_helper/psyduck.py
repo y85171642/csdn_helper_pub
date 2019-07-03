@@ -215,7 +215,7 @@ def build_download_detail_info(result: db_helper.Download):
     msg += '\n评分\t：{}{}'.format('★' * result.stars, '☆' * (5 - result.stars))
     msg += '\n所需\t：{} 积分/C币'.format(result.coin)
     msg += '\n大小\t：{}'.format(result.size)
-    msg += '\n下载\t：{}{}.zip'.format(config.download_server_url, result.id)
+    msg += '\n下载\t：{}'.format(build_url(result.id))
     msg += '\nID\t：{}'.format(result.id)
     msg += '\n类型\t：{}'.format(result.type)
     msg += '\n标签\t：{}'.format(result.tag)
@@ -236,10 +236,16 @@ def build_download_info(result: db_helper.Download):
     msg += '\n评分：{}{}'.format('★' * result.stars, '☆' * (5 - result.stars))
     msg += '\n所需：{} 积分/C币'.format(result.coin)
     msg += '\n大小：{}'.format(result.size)
-    msg += '\n下载：{}{}.zip'.format(config.download_server_url, result.id)
+    msg += '\n下载：{}'.format(build_url(result.id))
     msg += '\n' + '-' * 60
     msg += '\n-more 获取更多信息'
     return msg
+
+
+def build_url(id):
+    import short_url
+    url = '{}{}.zip'.format(config.download_server_url, id)
+    return short_url.get(url)[7:]
 
 
 def build_find_msg(result, total, start_index=0):
@@ -247,14 +253,33 @@ def build_find_msg(result, total, start_index=0):
         return '未找到符合条件的结果。'
     msg = '共{2}条搜索结果（{0}~{1}）：'.format(start_index + 1, start_index + len(result), total)
     for d in result:
-        t = d.title
-        if len(t) > 25:
-            t = t[:25] + '....'
-        msg += '\nID({}){}：{}'.format(d.id, '  ' * (8 - len(str(d.id))), t)
-    msg += '\n' + '-' * 65
+        title = d.title
+        _len = 12
+        if text_size(title) > _len:
+            title = text_sub_size(title, _len) + '...'
+        _id_sep = '  ' * (8 - len(str(d.id)))
+        _title_sep = '　' * (_len - text_size(title))
+        msg += '\nID({}){}：{}{}\t{}'.format(d.id, _id_sep, title, _title_sep, build_url(d.id))
+    msg += '\n' + '-' * 70
     msg += '\n-more 获取更多信息'
     msg += '\n-info [id] 下载/查看文件信息'
     return msg
+
+
+def text_sub_size(text, size):
+    for i in range(len(text)):
+        if text_size(text[0:i]) >= size:
+            return text[0:i]
+    return text
+
+
+def text_size(text):
+    if text == '':
+        return 0
+    txt_len = len(text)
+    txt_len_utf8 = len(text.encode('utf-8'))
+    size = int((txt_len_utf8 - txt_len) / 4 + txt_len / 2)
+    return size
 
 
 def build_rank_msg(result, start_index=0):
@@ -272,10 +297,7 @@ def build_rank_msg(result, start_index=0):
 
 
 def build_name_str(name):
-    txt_len = len(name)
-    txt_len_utf8 = len(name.encode('utf-8'))
-    size = int((txt_len_utf8 - txt_len) / 4 + txt_len / 2)
-    name = '【{}】{}'.format(name, (10 - size) * '　')
+    name = '【{}】{}'.format(name, (10 - text_size(name)) * '　')
     return name
 
 
@@ -328,6 +350,7 @@ async def handle_group_increase(context):
     await bot.send(context,
                    message='欢迎【{}】加入本群～\n友情提示：{}可以免费下载CSDN资源哦！\n-help 查看帮助'.format(name, config.default_qq_name),
                    at_sender=False, auto_escape=True)
+
 
 '''
 @bot.on_request('group')

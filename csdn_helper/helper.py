@@ -291,12 +291,15 @@ def check_download_limit(qq_num, qq_group):
         if donor['qq'] == qq_num:
             money = donor['money']
             break
-    if db_helper.count_today(qq_num, qq_group) >= 1:
-        count = (int(money) + config.default_daily_download_count)
+
+    count = (int(money) + config.default_daily_download_count)
+    if db_helper.count_today(qq_num, qq_group) >= count:
         return False, "您今日下载次数已达到上限（%d）次，请明日再来下载！" % count
-    if db_helper.count_month(qq_num, qq_group) >= 10:
-        count = (int(money * 2) + config.default_monthly_download_count)
+
+    count = (int(money * 2) + config.default_monthly_download_count)
+    if db_helper.count_month(qq_num, qq_group) >= count:
         return False, "您本月下载次数已达到上限（%d）次，请下月再来下载！" % count
+    
     return True, ""
 
 
