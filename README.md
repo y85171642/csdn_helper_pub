@@ -42,8 +42,7 @@
 ## 5. 捐赠
 [捐赠页面](http://39.105.150.229:8733/psyduck_donate)
 
-**请在支付时备注您的QQ号**
+**请使用微信扫码，并在支付时备注您的QQ号**
 
 ![donate_qrcode](https://github.com/y85171642/csdn_helper_pub/blob/master/donate_qrcode/donate_wechat_qrcode.jpeg)
-![donate_qrcode](https://github.com/y85171642/csdn_helper_pub/blob/master/donate_qrcode/donate_alipay_qrcode.jpg)
 
