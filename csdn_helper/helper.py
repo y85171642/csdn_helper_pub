@@ -276,6 +276,7 @@ def __get_download_info():
     import datetime
     coin_el = find('//div[@class="dl_download_box dl_download_l"]/label/em')
     coin = 0 if coin_el is None else int(coin_el.text.strip())
+    date_str = find('//strong[@class="size_box"]/span[1]').text.strip()[:10]
     info = {
         'id': find('//div[@id="download_top"]').get_attribute('data-id'),
         'title': find('//dl[@class="download_dl"]/dd/h3').get_attribute('title'),
@@ -284,7 +285,7 @@ def __get_download_info():
         'tag': find('//a[@class="tag"]').text.strip(),
         'coin': coin,
         'stars': find_count('//span[@class="starts"]//i[@class="fa fa-star yellow"]'),
-        'upload_date': datetime.datetime.fromisoformat(find('//strong[@class="size_box"]/span[1]').text.strip()[:10]),
+        'upload_date': datetime.datetime.strptime(date_str, "%Y-%m-%d"),
         'size': find('//strong[@class="size_box"]/span[2]/em').text.strip(),
     }
     return info
