@@ -2,20 +2,23 @@
 #### QQ机器人自动下载CSDN资源
 #### ！！！需要登录个人CSDN账号，使用CSDN积分或者VIP会员下载次数，进行下载。并非免积分下载。
 
-## [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest) 
-*使用方法参考下载包中的 【使用说明】* 
+## [最新版本下载](https://github.com/y85171642/csdn_helper_pub/releases/latest)
+*使用方法参考下载包中的 【使用说明】*
 
 ## 1. 开发环境：
+* 以下为使用源码进行二次开发时配置，若非二次开发下载最新发布版本即可。
 
 * 需要 python3.7 以上版本。
 
-* 安装 requirements.txt 依赖库： ```pip install -r requirements.txt``` (建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装)。
+*  建议使用 [独立环境](https://www.jianshu.com/p/6a3ff66cb8d3) 安装（非必须）。
+
+* 安装 csdn_helper/requirements.txt 依赖库： ```pip install -r requirements.txt```
 
 * 运行CoolQ插件：酷Q Air 目录下 CQA.exe。如发生错误，参考下文 **CoolQ 插件使用 注意事项**。
 
 * 配置 csdn_helper/config.ini 配置文件，完成自己想要的配置。
 
-* 在 csdn_helper 目录下运行 coolq.py ```python psyduck.py``` （如果有独立Python环境，请切换到独立环境中运行）。
+* 运行 csdn_helper/psyduck.py ```python psyduck.py```
 
 * 尝试 发送QQ消息 ```-help``` 给登录的账户（需要是好友，或者在同一个群组中），验证是否运行成功。
 
@@ -45,4 +48,3 @@
 **请使用微信扫码，并在支付时备注您的QQ号**
 
 ![donate_qrcode](https://github.com/y85171642/csdn_helper_pub/blob/master/donate_qrcode/donate_wechat_qrcode.jpeg)
-
