@@ -25,13 +25,10 @@ def frozen_path(_path):
 
 
 def get_donate_list():
-    # 创建管理对象
-    _con = configparser.ConfigParser()
-
-    # 读ini文件
     _path = frozen_path("donate_list.ini")
-    if not os.path.exists(cfg_path):
+    if not os.path.exists(_path):
         return []
+    _con = configparser.ConfigParser()
     _con.read(_path, encoding="utf-8")
     return eval(_con.get('general', 'list'))
 
