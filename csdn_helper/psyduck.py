@@ -2,6 +2,7 @@ from aiocqhttp import CQHttp
 import db_helper
 import helper
 import config
+import short_url
 
 bot = CQHttp(access_token='123',
              secret='abc')
@@ -46,9 +47,17 @@ def rm_at_me(message):
     return message.replace('[CQ:at,qq=%s]' % config.default_qq, '')
 
 
-@bot.on_message
-# 上面这句等价于 @bot.on('message')
-async def handle_msg(context):
+@bot.on_message('private')
+async def handle_msg_private(context):
+    qq_num = int(context['sender']['user_id'])
+    if qq_num in config.admin_list:
+        await handle_msg_group(context)
+    else:
+        await bot.send(context, "您没有权限使用大黄鸭，请加群：%s" % config.default_group)
+
+
+@bot.on_message('group')
+async def handle_msg_group(context):
     global last_cmd
     global last_arg_str
     global last_arg_int
@@ -93,7 +102,10 @@ async def handle_msg(context):
         msg += '\n● 更多信息　-more'
         msg += '\n' + '-' * 38
         msg += '\n* 直接输入CSDN下载页链接即可下载'
-        msg += '\n* 大黄鸭源码 http://t.cn/EK5Q58Y'
+        if config.source_code_url != '':
+            msg += '\n* 工具源码 %s' % short_url.get(config.source_code_url)
+        if config.donate_url != '':
+            msg += '\n* 网络乞讨 %s' % short_url.get(config.donate_url)
         last_cmd = cmd
         await bot.send(context, msg)
 
@@ -242,10 +254,9 @@ def build_download_info(result: db_helper.Download):
     return msg
 
 
-def build_url(id):
-    import short_url
-    url = '{}{}.zip'.format(config.download_server_url, id)
-    return short_url.get(url)[7:]
+def build_url(_id):
+    url = '{}{}.zip'.format(config.download_server_url, _id)
+    return short_url.get(url)
 
 
 def build_find_msg(result, total, start_index=0):
@@ -335,8 +346,8 @@ def build_personal(qq, name):
     else:
         msg += '【普通】'
 
-    msg += '\n每日下载次数：{}次'.format(config.default_daily_download_count + int(money))
-    msg += '\n每月下载次数：{}次'.format(config.default_monthly_download_count + int(money * 2))
+    msg += '\n每日下载次数：{}次'.format(config.daily_download_count + int(money))
+    msg += '\n每月下载次数：{}次'.format(config.monthly_download_count + int(money * 2))
     return msg
 
 

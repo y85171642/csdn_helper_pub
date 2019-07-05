@@ -137,37 +137,6 @@ def auto_login():
         print('验证完成！尝试重新登录中...')
         continue
 
-        find('//div[@class="main-select"]/ul/li[2]/a').click()
-        time.sleep(1)
-        find('//input[@id="all"]').clear()
-        find('//input[@id="all"]').send_keys(config.account)
-        time.sleep(1)
-        find('//div[@class="main-login"]').click()
-        find('//input[@id="password-number"]').clear()
-        find('//input[@id="password-number"]').send_keys(config.password)
-        time.sleep(1)
-        find('//button[@class="btn btn-primary"]').click()
-        time.sleep(3)
-
-        if driver.current_url == 'https://passport.csdn.net/sign':
-            input('需要进行安全验证，请在浏览器中完成验证，并按任意键继续...')
-            print('验证完成！尝试重新登录中...')
-        elif driver.current_url == 'https://passport.csdn.net/login':
-            if find('//div[@class="shumei_captcha shumei_captcha_popup_wrapper shumei_show"]') is not None:
-                input('需要进行滑块验证，请在浏览器中完成验证，并按任意键继续...')
-                print('验证完成！尝试重新登录中...')
-            elif find('//button[@class="btn btn-primary__disabled"]') is not None:
-                input('用户名密码为空，请主动登录账号，并按任意键继续...')
-                print('验证完成！尝试重新登录中...')
-            elif find('//div[@class="form-group form-group-error"]') is not None:
-                input('用户名密码错误，请主动登录账号，并按任意键继续...')
-                print('验证完成！尝试重新登录中...')
-            else:
-                input('自动登录失败，请主动登录账号，并按任意键继续...')
-                print('验证完成！尝试重新登录中...')
-        else:
-            print('账户登录成功！')
-
 
 def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name, qq_group=-1):
     step = 'begin download'
@@ -276,9 +245,9 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
 
 
 def __valid_download_url(url):
-    import requests
     # 暂时屏蔽验证
     return True
+    import requests
     if requests.get(url).text.find('<div class="download_l fl" id="detail_down_l">') != -1:
         return True
     return False
@@ -292,14 +261,14 @@ def check_download_limit(qq_num, qq_group):
             money = donor['money']
             break
 
-    count = (int(money) + config.default_daily_download_count)
+    count = (int(money) + config.daily_download_count)
     if db_helper.count_today(qq_num, qq_group) >= count:
         return False, "您今日下载次数已达到上限（%d）次，请明日再来下载！" % count
 
-    count = (int(money * 2) + config.default_monthly_download_count)
+    count = (int(money * 2) + config.monthly_download_count)
     if db_helper.count_month(qq_num, qq_group) >= count:
         return False, "您本月下载次数已达到上限（%d）次，请下月再来下载！" % count
-    
+
     return True, ""
 
 

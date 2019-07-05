@@ -4,7 +4,7 @@
     "use_http": false,
     "ws_host": "127.0.0.1",
     "ws_port": 6700,
-    "use_ws": true,
+    "use_ws": false,
     "ws_reverse_url": "",
     "ws_reverse_api_url": "ws://127.0.0.1:8800/ws/api/",
     "ws_reverse_event_url": "ws://127.0.0.1:8800/ws/event/",
