@@ -75,6 +75,15 @@ def count_today(qq_num, qq_group):
                                    & (Download.created_date.day == datetime.datetime.now().day)).count()
 
 
+def count_weekly(qq_num, qq_group):
+    check_table()
+    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
+                                   & (Download.created_date.year == datetime.datetime.now().year)
+                                   & (datetime.datetime(Download.created_date.year, Download.created_date.month,
+                                                        Download.created_date.day, 0, 0, 0).isocalendar()[1] ==
+                                      datetime.datetime.now().isocalendar()[1])).count()
+
+
 def count_month(qq_num, qq_group):
     check_table()
     return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)

@@ -60,6 +60,7 @@ donate_url = get_cfg('donate_url')
 source_code_url = get_cfg('source_code_url')
 admin_list = eval(get_cfg('admin_list'))
 daily_download_count = int(get_cfg('daily_download_count'))
+weekly_download_count = int(get_cfg('weekly_download_count'))
 monthly_download_count = int(get_cfg('monthly_download_count'))
 use_short_url = str_to_bool(get_cfg('use_short_url'))
 

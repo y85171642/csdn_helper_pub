@@ -105,7 +105,7 @@ async def handle_msg_group(context):
         if config.source_code_url != '':
             msg += '\n* 工具源码 %s' % short_url.get(config.source_code_url)
         if config.donate_url != '':
-            msg += '\n* 网络乞讨 %s' % short_url.get(config.donate_url)
+            msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
         last_cmd = cmd
         await bot.send(context, msg)
 
@@ -194,6 +194,8 @@ async def handle_msg_group(context):
     if download_id is not None:
         if helper.__already_download(download_id) and db_helper.exist_download(download_id):
             msg = build_download_info(db_helper.get_download(download_id))
+            if config.donate_url != '':
+                msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
             await bot.send(context, msg)
             return
 
@@ -217,6 +219,10 @@ async def handle_msg_group(context):
                 msg = build_download_info(result)
                 last_cmd = '-info'
                 last_arg_int = int(result.id)
+
+            if config.donate_url != '':
+                msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
+
             await bot.send(context, msg)
         finally:
             helper.dispose()
@@ -346,8 +352,9 @@ def build_personal(qq, name):
     else:
         msg += '【普通】'
 
-    msg += '\n每日下载次数：{}次'.format(config.daily_download_count + int(money))
-    msg += '\n每月下载次数：{}次'.format(config.monthly_download_count + int(money * 2))
+    msg += '\n每日下载次数：{}次'.format(helper.daily_download_count(qq))
+    msg += '\n每周下载次数：{}次'.format(helper.weekly_download_count(qq))
+    msg += '\n每月下载次数：{}次'.format(helper.monthly_download_count(qq))
     return msg
 
 
