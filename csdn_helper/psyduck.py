@@ -95,17 +95,15 @@ async def handle_msg_group(context):
         qq_group = str(context['group_id'])
 
     if cmd == '-help' or cmd == '-?':
-        msg = '● 用户信息　-user'
+        msg = '● 个人信息　-personal'
         msg += '\n● 排行榜　　-rank [index]'
         msg += '\n● 查询文件　-find [keyword]'
         msg += '\n● 文件信息　-info [id]'
         msg += '\n● 更多信息　-more'
-        msg += '\n' + '-' * 38
-        msg += '\n* 直接输入CSDN下载页链接即可下载'
-        if config.source_code_url != '':
-            msg += '\n* 工具源码 %s' % short_url.get(config.source_code_url)
-        if config.donate_url != '':
-            msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
+        msg += sep_s()
+        msg += '\n* 输入CSDN下载页链接下载'
+        msg += source_code_tail()
+        msg += donate_tail()
         last_cmd = cmd
         await bot.send(context, msg)
 
@@ -160,7 +158,7 @@ async def handle_msg_group(context):
         await bot.send(context, msg)
 
     if cmd == '-personal':
-        msg = build_personal(qq_num, qq_name)
+        msg = build_personal(qq_num, qq_group, qq_name)
         await bot.send(context, msg)
 
     if cmd == '-more':
@@ -184,18 +182,19 @@ async def handle_msg_group(context):
             last_arg_int += 10
             msg = build_donors(last_arg_int)
             await bot.send(context, msg)
-        if last_cmd == '-help':
-            msg = '● 捐赠名单　-donors'
-            msg += '\n● 个人信息　-personal'
-            msg += '\n' + '-' * 38
+        if last_cmd == '-help' or last_cmd == '-?':
+            msg = '● 用户信息　-user'
+            msg += '\n● 捐赠名单　-donors'
+            msg += sep_s()
+            msg += '\n* 输入CSDN下载页链接下载'
+            msg += source_code_tail()
+            msg += donate_tail()
             await bot.send(context, msg)
 
     download_id = find_csdn_download_id(context['message'])
     if download_id is not None:
         if helper.__already_download(download_id) and db_helper.exist_download(download_id):
             msg = build_download_info(db_helper.get_download(download_id))
-            if config.donate_url != '':
-                msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
             await bot.send(context, msg)
             return
 
@@ -219,13 +218,24 @@ async def handle_msg_group(context):
                 msg = build_download_info(result)
                 last_cmd = '-info'
                 last_arg_int = int(result.id)
-
-            if config.donate_url != '':
-                msg += '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
-
+            elif donate_tail() != '':
+                msg += sep_s()
+                msg += donate_tail()
             await bot.send(context, msg)
         finally:
             helper.dispose()
+
+
+def source_code_tail():
+    if config.source_code_url != '':
+        return '\n* 工具源码 %s' % short_url.get(config.source_code_url)
+    return ''
+
+
+def donate_tail():
+    if config.donate_url != '':
+        return '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
+    return ''
 
 
 def build_download_detail_info(result: db_helper.Download):
@@ -248,15 +258,16 @@ def build_download_detail_info(result: db_helper.Download):
 
 def build_download_info(result: db_helper.Download):
     title = result.title
-    if len(title) > 30:
-        title = title[:30] + '....'
+    if text_size(title) > 20:
+        title = text_sub_size(title, 20) + '...'
     msg = title
     msg += '\n评分：{}{}'.format('★' * result.stars, '☆' * (5 - result.stars))
     msg += '\n所需：{} 积分/C币'.format(result.coin)
     msg += '\n大小：{}'.format(result.size)
     msg += '\n下载：{}'.format(build_url(result.id))
-    msg += '\n' + '-' * 60
+    msg += sep_l()
     msg += '\n-more 获取更多信息'
+    msg += donate_tail()
     return msg
 
 
@@ -271,13 +282,12 @@ def build_find_msg(result, total, start_index=0):
     msg = '共{2}条搜索结果（{0}~{1}）：'.format(start_index + 1, start_index + len(result), total)
     for d in result:
         title = d.title
-        _len = 12
+        _len = 16
         if text_size(title) > _len:
             title = text_sub_size(title, _len) + '...'
         _id_sep = '  ' * (8 - len(str(d.id)))
-        _title_sep = '　' * (_len - text_size(title))
-        msg += '\nID({}){}：{}{}\t{}'.format(d.id, _id_sep, title, _title_sep, build_url(d.id))
-    msg += '\n' + '-' * 70
+        msg += '\nID({}){}：{}'.format(d.id, _id_sep, title)
+    msg += sep_l()
     msg += '\n-more 获取更多信息'
     msg += '\n-info [id] 下载/查看文件信息'
     return msg
@@ -308,7 +318,7 @@ def build_rank_msg(result, start_index=0):
         name = build_name_str(fo[1]['name'])
         msg += '\n{}.{}\t{}次\t(共消耗{}积分)'.format(index, name, fo[1]['count'], fo[1]['coin'])
         index += 1
-    msg += '\n' + '-' * 60
+    msg += sep_l()
     msg += '\n-more 获取更多信息'
     return msg
 
@@ -328,34 +338,42 @@ def build_donors(start_index=0):
         name = build_name_str(donor['name'])
         rmb = donor['money']
         msg += '\n{}\t￥{}'.format(name, rmb)
-    msg += '\n' + '-' * 60
+    msg += sep_l()
     msg += '\n-more 获取更多信息'
     return msg
 
 
-def build_personal(qq, name):
+def build_personal(qq_num, qq_group, name):
     msg = '{}'.format(name)
     vip_level = 0
-    money = 0
     for donor in config.donate_list:
-        if donor['qq'] == qq:
-            money = donor['money']
-            if donor['money'] >= 100:
-                vip_level = 2
-            else:
-                vip_level = 1
+        if donor['qq'] == qq_num:
+            vip_level = int(donor['money'] ** 0.3)
             break
-    if vip_level == 2:
-        msg += '【SVIP】'
-    elif vip_level == 1:
-        msg += '【VIP】'
+
+    if vip_level > 0:
+        msg += '【VIP%d】' % vip_level
     else:
         msg += '【普通】'
 
-    msg += '\n每日下载次数：{}次'.format(helper.daily_download_count(qq))
-    msg += '\n每周下载次数：{}次'.format(helper.weekly_download_count(qq))
-    msg += '\n每月下载次数：{}次'.format(helper.monthly_download_count(qq))
+    _d_used = db_helper.count_daily(qq_num, qq_group)
+    _d_total = helper.daily_download_count(qq_num)
+    msg += '\n本日剩余下载次数：{}/{}次'.format(_d_total - _d_used, _d_total)
+    _w_used = db_helper.count_weekly(qq_num, qq_group)
+    _w_total = helper.weekly_download_count(qq_num)
+    msg += '\n本周剩余下载次数：{}/{}次'.format(_w_total - _w_used, _w_total)
+    _m_used = db_helper.count_monthly(qq_num, qq_group)
+    _m_total = helper.monthly_download_count(qq_num)
+    msg += '\n本月剩余下载次数：{}/{}次'.format(_m_total - _m_used, _m_total)
     return msg
+
+
+def sep_s():
+    return '\n' + '-' * 29
+
+
+def sep_l():
+    return '\n' + '-' * 56
 
 
 @bot.on_notice('group_increase')

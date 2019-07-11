@@ -56,8 +56,9 @@ def exist_download(_id):
 def find_all(keyword, start_index=0, count=10):
     check_table()
     if keyword == '':
-        return Download.select().limit(count).offset(start_index)
-    return Download.select().where(Download.title.contains(keyword)).limit(count).offset(start_index)
+        return Download.select().order_by(-Download.created_date).offset(start_index).limit(count)
+    return Download.select().where(Download.title.contains(keyword)).order_by(-Download.created_date).offset(
+        start_index).limit(count)
 
 
 def count_all(keyword):
@@ -67,28 +68,37 @@ def count_all(keyword):
     return Download.select().where(Download.title.contains(keyword)).count()
 
 
-def count_today(qq_num, qq_group):
+def count_daily(qq_num, qq_group):
     check_table()
-    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
-                                   & (Download.created_date.year == datetime.datetime.now().year)
-                                   & (Download.created_date.month == datetime.datetime.now().month)
-                                   & (Download.created_date.day == datetime.datetime.now().day)).count()
+    _all = Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group))
+    _now = datetime.datetime.now()
+    count = 0
+    for d in _all:
+        if d.created_date.year == _now.year and d.created_date.month == _now.month and d.created_date.day == _now.day:
+            count += 1
+    return count
 
 
 def count_weekly(qq_num, qq_group):
     check_table()
-    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
-                                   & (Download.created_date.year == datetime.datetime.now().year)
-                                   & (datetime.datetime(Download.created_date.year, Download.created_date.month,
-                                                        Download.created_date.day, 0, 0, 0).isocalendar()[1] ==
-                                      datetime.datetime.now().isocalendar()[1])).count()
+    _all = Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group))
+    _now = datetime.datetime.now()
+    count = 0
+    for d in _all:
+        if d.created_date.year == _now.year and d.created_date.isocalendar()[1] == _now.isocalendar()[1]:
+            count += 1
+    return count
 
 
-def count_month(qq_num, qq_group):
+def count_monthly(qq_num, qq_group):
     check_table()
-    return Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group)
-                                   & (Download.created_date.year == datetime.datetime.now().year)
-                                   & (Download.created_date.month == datetime.datetime.now().month)).count()
+    _all = Download.select().where((Download.qq_num == qq_num) & (Download.qq_group == qq_group))
+    _now = datetime.datetime.now()
+    count = 0
+    for d in _all:
+        if d.created_date.year == _now.year and d.created_date.month == _now.month:
+            count += 1
+    return count
 
 
 def rank_qq(start_index=0, count=10):

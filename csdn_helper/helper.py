@@ -263,27 +263,22 @@ def get_money(qq_num):
 
 
 def monthly_download_count(qq_num):
-    return int(get_money(qq_num) * 0.5) + config.monthly_download_count
+    return int(get_money(qq_num) ** 0.7) + config.monthly_download_count
 
 
 def weekly_download_count(qq_num):
-    return int(get_money(qq_num) * 0.2) + config.weekly_download_count
+    return int(get_money(qq_num) ** 0.5) + config.weekly_download_count
 
 
 def daily_download_count(qq_num):
-    return int(get_money(qq_num) * 0.1) + config.daily_download_count
+    return int(get_money(qq_num) ** 0.3) + config.daily_download_count
 
 
 def check_download_limit(qq_num, qq_group):
     import db_helper
-    money = 0
-    for donor in config.donate_list:
-        if donor['qq'] == qq_num:
-            money = donor['money']
-            break
 
     count = daily_download_count(qq_num)
-    if db_helper.count_today(qq_num, qq_group) >= count:
+    if db_helper.count_daily(qq_num, qq_group) >= count:
         return False, "您今日下载次数已达到上限（%d）次，请明日再来下载！" % count
 
     count = weekly_download_count(qq_num)
@@ -291,7 +286,7 @@ def check_download_limit(qq_num, qq_group):
         return False, "您本周下载次数已达到上限（%d）次，请下周再来下载！" % count
 
     count = monthly_download_count(qq_num)
-    if db_helper.count_month(qq_num, qq_group) >= count:
+    if db_helper.count_monthly(qq_num, qq_group) >= count:
         return False, "您本月下载次数已达到上限（%d）次，请下月再来下载！" % count
 
     return True, ""
