@@ -21,7 +21,7 @@ def create_dir():
         os.mkdir(zip_save_path)
 
 
-def init():
+def init(_option_path=''):
     global is_driver_busy
     global driver
     is_driver_busy = True
@@ -32,8 +32,10 @@ def init():
     if not os.path.exists(_driver_path):
         raise Exception('chromedriver not exist at {}'.format(_driver_path))
 
+    if _option_path == '':
+        _option_path = option_path
     options = selenium.webdriver.ChromeOptions()
-    options.add_argument("user-data-dir=" + option_path)
+    options.add_argument("user-data-dir=" + _option_path)
     options.add_argument('disable-infobars')
     options.add_argument('--mute-audio')
     options.add_argument('--disable-gpu')
@@ -127,6 +129,10 @@ def check_login():
     return False
 
 
+def logout():
+    get('https://passport.csdn.net/account/logout')
+
+
 def auto_login():
     while not check_login():
         print('自动登录...')
@@ -201,7 +207,10 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
 
         step = 'find confirm download'
         if vip_channel:
-            find('//a[@class="dl_btn vip_dl_btn" and text()="VIP下载"]').click()
+            if find('//div[@id="vipIgnoreP"]').get_attribute('style').find('display: block;') != -1:
+                find('//div[@id="vipIgnoreP"]//a[@class="dl_btn vip_dl_btn"]').click()
+            else:
+                pass  # 无弹窗情况（自己的资源）
         else:
             if find('//div[@id="noVipEnoughP"]').get_attribute('style').find('display: block;') != -1:
                 find('//div[@id="noVipEnoughP"]//a[@class="dl_btn js_download_btn"]').click()
@@ -216,7 +225,7 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
             elif find('//div[@id="dl_lock"]').get_attribute('style').find('display: block;') != -1:
                 return __download_result(False, find('//div[@id="dl_lock"]').text)
             else:
-                return __download_result(False, "该资源无法下载！")
+                pass  # 无弹窗情况（自己的资源）
 
             time.sleep(1)
             if find('//div[@id="dl_security_detail"]').get_attribute('style').find('display: block;') != -1:
@@ -242,6 +251,27 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
         import traceback
         traceback.print_exc()
         return __download_result(False, "error : %s" % step)
+
+
+async def export_all():
+    import asyncio
+    await asyncio.sleep(1)
+    format_url = 'https://download.csdn.net/my/uploads/1/{}'
+    res_url = []
+    for i in range(1, 100):
+        _url = format_url.format(i)
+        get(_url)
+        if find('//dt[@class="empty_icons"]') is not None:
+            break
+        els = find_all('//div[@class="content"]/h3/a[@target="_blank"]')
+        for el in els:
+            if el.get_attribute('href') is None:
+                continue
+            res_url.append(el.get_attribute('href'))
+    for _url in res_url:
+        yield "开始下载：" + _url
+        auto_download(_url)
+        yield "下载完成：" + _url
 
 
 def __valid_download_url(url):

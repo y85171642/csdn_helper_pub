@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.js"></script>
+    <script>
+        var murmur = '';
+        if (window.requestIdleCallback) {
+            requestIdleCallback(function () {
+                Fingerprint2.get(function (components) {
+                    var values = components.map(function (component) { return component.value })
+                    murmur = Fingerprint2.x64hash128(values.join(''), 31)
+                })
+            })
+        } else {
+            setTimeout(function () {
+                Fingerprint2.get(function (components) {
+                    var values = components.map(function (component) { return component.value })
+                    murmur = Fingerprint2.x64hash128(values.join(''), 31)
+                })
+            }, 500)
+        }
+
+    </script>
+    <script>
+        function export_start()
+        {
+            $.ajax({
+                type: 'get',
+                url: 'export_start?murmur=' + murmur,
+                dataType: 'json',
+                success: function(res) {
+                    if(res.step == 0)
+                        $("#p").html('<button type="button" onclick="export_start()">开始</button>')
+                    else
+                        $("#p").html('开始')
+                },
+                error: function() {
+                    console.log('请求失败~');
+                }
+            });
+        }
+
+        function export_progress()
+        {
+            $.ajax({
+                type: 'get',
+                url: 'export_progress?murmur=' + murmur,
+                dataType: 'json',
+                success: function(res) {
+                    console.log(res);
+                    if(res.step == 0)
+                        $("#p").html('<button type="button" onclick="export_start()">开始</button>')
+                    else
+                        $("#p").html('开始')
+                },
+                error: function() {
+                    console.log('请求失败~');
+                }
+            });
+        }
+        
+        export_progress();
+        setInterval(export_progress, 3000);
+
+    </script>
+
+</head>
+
+<body>
+
+<div class="container">
+    <div class="text-center">
+        <hr>
+        <font color="707777" size="3" style=""><b> CSDN资源导出 </b></font><br><br>
+        <hr>
+        <br>
+    </div>
+    <ul id="p" class="list text-center">
+    </ul>
+    <br>
+    <br>
+    <br>
+    <footer class="navbar-fixed-bottom text-center">
+        <font color="#909090">
+            <hr>
+            由于CSDN资源下载机制很难做到免费下载，<br>
+            但作者并不希望大黄鸭作为一个收费CSDN下载工具。<br>
+            特此通过捐助方式来支持大黄鸭，希望能够得到您的帮助。 <br>
+        </font>
+    </footer>
+</div>
+</body>
+</html>
