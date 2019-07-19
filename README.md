@@ -38,5 +38,8 @@
 
 * 需要 Chrome 74以上版本，或替换对应的 [chromedriver 驱动](http://npm.taobao.org/mirrors/chromedriver/)。
 
-## 4. 捐赠
+## 4. CSDN资源免费下载群 ↓↓↓
+* 606737006 [入群通道](https://jq.qq.com/?_wv=1027&k=5iTU5gd)
+
+## 5. 捐赠
 [捐赠通道](http://39.105.150.229:8733/psyduck_donate)
