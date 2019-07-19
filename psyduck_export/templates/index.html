@@ -21,22 +21,85 @@
                     var values = components.map(function (component) { return component.value })
                     murmur = Fingerprint2.x64hash128(values.join(''), 31)
                 })
-            }, 500)
+            }, 200)
         }
 
     </script>
+
     <script>
-        function export_start()
+        var step = '';
+        var msg = '';
+        function html_start()
+        {
+            $("#p").html('<button type="button" onclick="export_act(\'start\')">开始</button>')
+        }
+
+        function html_starting()
+        {
+            $("#p").html('启动中...')
+        }
+
+        function html_qr_code()
+        {
+            $("#p").html('QR...')
+        }
+
+        function html_login()
+        {
+            $("#p").html('\
+            <input type="text" id="phone_num" class="form-control" placeholder="手机号">\
+            <input type="text" id="verify_code" class="form-control" placeholder="6位数字验证码">\
+            <button type="button" onclick="export_act(\'login_verify_code\')">获取验证码</button>\
+            <button type="button" onclick="login()">登录</button>\
+            <p class="help-block">这里是块级帮助文本的实例。</p>\
+            ')
+        }
+
+        function login()
+        {
+            var type = 'phone';
+            var phone_num = $("#phone_num").val();
+            var verify_code = $("verify_code").val();
+            export_act('login', type + '_' + phone_num + '_' + verify_code);
+        }
+
+
+        function html_in_progress()
+        {
+            $("#p").html('处理中...')
+        }
+
+        function export_loop()
+        {
+            if(step == 'process')
+                export_act('progress')
+            if(step == 'starting')
+                export_act('starting')
+        }
+
+        function refresh_html()
+        {
+            if(step == 'init')
+                html_start();
+            else if(step == 'starting')
+                html_starting()
+            else if(step == 'login')
+                html_login()
+            else if(step == 'process')
+                html_in_progress()
+        }
+
+        function export_act(act, args='')
         {
             $.ajax({
                 type: 'get',
-                url: 'export_start?murmur=' + murmur,
+                url: 'export_progress?murmur=' + murmur + '&act=' + act + '&args=' + args,
                 dataType: 'json',
                 success: function(res) {
-                    if(res.step == 0)
-                        $("#p").html('<button type="button" onclick="export_start()">开始</button>')
-                    else
-                        $("#p").html('开始')
+                    console.log(res);
+                    step = res.step;
+                    msg = res.msg;
+                    refresh_html();
                 },
                 error: function() {
                     console.log('请求失败~');
@@ -44,27 +107,8 @@
             });
         }
 
-        function export_progress()
-        {
-            $.ajax({
-                type: 'get',
-                url: 'export_progress?murmur=' + murmur,
-                dataType: 'json',
-                success: function(res) {
-                    console.log(res);
-                    if(res.step == 0)
-                        $("#p").html('<button type="button" onclick="export_start()">开始</button>')
-                    else
-                        $("#p").html('开始')
-                },
-                error: function() {
-                    console.log('请求失败~');
-                }
-            });
-        }
-        
-        export_progress();
-        setInterval(export_progress, 3000);
+        setTimeout("export_act('init')", 500);
+        setInterval("export_loop()", 1000);
 
     </script>
 
@@ -85,8 +129,8 @@
     <br>
     <br>
     <footer class="navbar-fixed-bottom text-center">
+        <hr>
         <font color="#909090">
-            <hr>
             由于CSDN资源下载机制很难做到免费下载，<br>
             但作者并不希望大黄鸭作为一个收费CSDN下载工具。<br>
             特此通过捐助方式来支持大黄鸭，希望能够得到您的帮助。 <br>
