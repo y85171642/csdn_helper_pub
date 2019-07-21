@@ -10,6 +10,7 @@ class Helper:
     is_ready = False
     driver = None
     download_path = None
+    export_path = None
     zip_export_path = None
     zip_save_path = None
     driver_path = None
@@ -19,8 +20,8 @@ class Helper:
     uuid = None
 
     export_url_list = []
+    export_name_list = []
     export_index = 0
-    export_downloading = False
 
     def __init__(self, uuid):
         self.uuid = uuid
@@ -44,7 +45,8 @@ class Helper:
         self.driver_path = config.frozen_path(os.path.join(self.data_path, 'chromedriver'))
         self.option_path = config.frozen_path(os.path.join(self.data_path, 'chrome_option'))
         self.download_path = config.frozen_path(os.path.join(self.data_path, 'download'))
-        self.zip_export_path = config.frozen_path('../static/{}.zip'.format(self.uuid))
+        self.export_path = os.path.abspath(config.frozen_path('../static/{}'.format(self.uuid)))
+        self.zip_export_path = os.path.abspath(config.frozen_path('../static/{}.zip'.format(self.uuid)))
         self.zip_save_path = config.frozen_path(config.zip_save_path)
 
     def __prepare(self):
@@ -52,9 +54,14 @@ class Helper:
         Helper._create_dir(self.data_path)
         import shutil
         _raw_driver_path = config.frozen_path(os.path.join('chrome_driver', Helper._get_driver_name('chromedriver')))
+        _driver_dir = os.path.dirname(self.driver_path)
+        Helper._create_dir(_driver_dir)
+        os.chmod(_driver_dir, 0o777)
         shutil.copyfile(_raw_driver_path, self.driver_path)
         Helper._create_dir(self.download_path)
         Helper._create_dir(self.zip_save_path)
+        Helper._create_dir(self.export_path)
+        os.chmod(self.export_path, 0o777)
 
     def __selenium_init(self):
         options = selenium.webdriver.ChromeOptions()
@@ -78,7 +85,7 @@ class Helper:
         cap["pageLoadStrategy"] = "none"
 
         options.add_experimental_option("prefs", prefs)
-        os.chmod(self.driver_path, 755)
+        os.chmod(self.driver_path, 0o777)
 
         self.driver = selenium.webdriver.Chrome(options=options, executable_path=self.driver_path,
                                                 desired_capabilities=cap)
@@ -150,6 +157,21 @@ class Helper:
     def login(self, phone_num, verify_code):
         if self.driver.current_url != 'https://passport.csdn.net/login':
             self.get('https://passport.csdn.net/login')
+            time.sleep(1)
+        self.find('//a[text()="免密登录"]').click()
+        time.sleep(1)
+        self.find('//input[@id="phone"]').clear()
+        self.find('//input[@id="phone"]').send_keys(phone_num)
+        time.sleep(1)
+        self.find('//input[@id="code"]').clear()
+        self.find('//input[@id="code"]').send_keys(verify_code)
+        time.sleep(1)
+        self.find('//button[@data-type="accountMianMi"]').click()
+        time.sleep(1)
+        err = self.find('//div[@id="js_err_dom"]')
+        if err is not None and err.get_attribute('class').find('hide') == -1:
+            return err.text
+        return ''
 
     def __valid_download_url(self, url):
         # 暂时屏蔽验证
@@ -180,15 +202,6 @@ class Helper:
             info['qq_num'] = qq_num
             info['qq_name'] = qq_name
             info['qq_group'] = qq_group
-
-            step = 'check already download'
-            if self.__already_download(info['id']):
-                step = 'already download set zip file name'
-                info['filename'] = self.__get_file_name_in_zip_file(info['id'])
-                step = 'save to db'
-                self.__save_to_db(info)
-                step = 'finish'
-                return self.__download_result(True, "success", info)
 
             step = 'find download button'
             btn = self.find('//div[@class="dl_download_box dl_download_l"]/a[text()="VIP下载"]')
@@ -250,6 +263,9 @@ class Helper:
             step = 'zip file'
             self.__zip_file(info['id'])
 
+            step = 'save to export'
+            self.__save_to_export(info['id'])
+
             step = 'save to db'
             self.__save_to_db(info)
 
@@ -260,10 +276,28 @@ class Helper:
             traceback.print_exc()
             return self.__download_result(False, "error : %s" % step)
 
+    def __save_to_export(self, _id):
+        import shutil
+        src = self.__get_tmp_download_file()
+        dst = os.path.join(self.export_path, _id + "." + os.path.basename(src))
+        shutil.copyfile(src, dst)
+
+    def __zip_export(self):
+        zip_path = os.path.join(self.zip_export_path)
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+        import zipfile
+        with zipfile.ZipFile(zip_path, mode='w') as zip_f:
+            for f in os.listdir(self.export_path):
+                zip_f.write(os.path.join(self.export_path, f), f)
+
+        for f in os.listdir(self.export_path):
+            os.remove(os.path.join(self.export_path, f))
+
     def export_all(self):
-        self.export_downloading = True
         format_url = 'https://download.csdn.net/my/uploads/1/{}'
         res_url = []
+        res_name = []
         for i in range(1, 100):
             _url = format_url.format(i)
             self.get(_url)
@@ -274,11 +308,13 @@ class Helper:
                 if el.get_attribute('href') is None:
                     continue
                 res_url.append(el.get_attribute('href'))
+                res_name.append(el.text.strip())
         self.export_url_list = res_url
+        self.export_name_list = res_name
         for i in range(0, len(res_url)):
             self.export_index = i
             self.download(res_url[i])
-        self.export_downloading = False
+        self.__zip_export()
 
     def __get_download_info(self):
         import datetime

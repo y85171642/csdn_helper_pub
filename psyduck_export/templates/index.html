@@ -7,97 +7,164 @@
     <script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.js"></script>
     <script>
+        var state = '';
+        var msg = '';
         var murmur = '';
-        if (window.requestIdleCallback) {
-            requestIdleCallback(function () {
-                Fingerprint2.get(function (components) {
+        function catch_murmur()
+        {
+            setTimeout(function ()
+            {
+                Fingerprint2.get(function (components)
+                {
                     var values = components.map(function (component) { return component.value })
                     murmur = Fingerprint2.x64hash128(values.join(''), 31)
                 })
-            })
-        } else {
-            setTimeout(function () {
-                Fingerprint2.get(function (components) {
-                    var values = components.map(function (component) { return component.value })
-                    murmur = Fingerprint2.x64hash128(values.join(''), 31)
-                })
-            }, 200)
+            }, 500)
         }
 
-    </script>
-
-    <script>
-        var step = '';
-        var msg = '';
         function html_start()
         {
-            $("#p").html('<button type="button" onclick="export_act(\'start\')">开始</button>')
+            $("#p").html('\
+            <button type="button" class="btn btn-primary" onclick="export_act(\'start\')">开始</button>\
+            ')
         }
 
-        function html_starting()
+        function html_export()
         {
-            $("#p").html('启动中...')
+            $("#p").html('\
+            <p class="text-success">' + "登陆成功！" + '</p>\
+            <button type="button" class="btn btn-primary" onclick="export_act(\'export\')">开始导出</button>\
+            ')
         }
 
-        function html_qr_code()
+        function html_finish()
         {
-            $("#p").html('QR...')
+            $("#p").html('\
+            <p class="text-success">' + "导出完成！" + '</p>\
+            <a href="/static/'+murmur+'.zip" class="btn btn-success" ">下载文件</a>\
+            <button type="button" class="btn btn-danger" onclick="export_act(\'reset\')">退出系统</button>\
+            ')
+        }
+
+        var _export_dot = 0;
+        function html_exporting()
+        {
+            var dots = ['.', '..', '...'];
+            var cur = parseInt(msg.split('_')[0]);
+            var total = parseInt(msg.split('_')[1]);
+            var name = msg.split('_')[2];
+            var url = msg.split('_')[3];
+            var percent = parseInt(1.0*cur/total*100)
+            $("#p").html('\
+            <p class="text-muted">' + "导出中("+cur+"/"+total+")" + dots[_export_dot++%3] + '</p>\
+            <a ' + (url==""?"":("href="+url+" ")) + 'target="_blank">' + name + '</a>\
+            <div class="progress progress-striped active form-inline">\
+            <div class="progress-bar progress-bar-success" role="progressbar"\
+            aria-valuenow="'+cur+'" aria-valuemin="0" aria-valuemax="'+total+'"\
+            style="width: '+percent+'%;">\
+            <span class="sr-only">'+percent+'% 完成</span>\
+            </div>\
+            </div>\
+            ')
         }
 
         function html_login()
         {
             $("#p").html('\
+            <p class="text-danger">暂时支持仅CSDN免密登录方式</p>\
+            <p class="text-danger">出于安全隐私考虑，验证码请至\
+            <a href="https://passport.csdn.net/login" target="_blank">CSDN登录页</a>\
+            【免密登录】获取！</p>\
+            <div class="form-group form-inline">\
             <input type="text" id="phone_num" class="form-control" placeholder="手机号">\
+            </div>\
+            <div class="form-group form-inline">\
             <input type="text" id="verify_code" class="form-control" placeholder="6位数字验证码">\
-            <button type="button" onclick="export_act(\'login_verify_code\')">获取验证码</button>\
-            <button type="button" onclick="login()">登录</button>\
-            <p class="help-block">这里是块级帮助文本的实例。</p>\
+            <!-- <button type="button" class="btn btn-primary" onclick="get_verify_code()">获取验证码</button> -->\
+            </div>\
+            <button type="button" class="btn btn-primary" onclick="login()">登录</button>\
+            <p class="text-danger">' + msg + '</p>\
             ')
+        }
+
+        function html(s)
+        {
+            $("#p").html(s);
+        }
+
+        function get_verify_code()
+        {
+            var phone_num = $("#phone_num").val();
+            if(phone_num == '')
+            {
+                msg = "手机号不能为空！";
+                html_login();
+                return;
+            }
+            export_act('get_verify_code', phone_num);
         }
 
         function login()
         {
             var type = 'phone';
             var phone_num = $("#phone_num").val();
-            var verify_code = $("verify_code").val();
+            var verify_code = $("#verify_code").val();
+            if(phone_num == '')
+            {
+                msg = "手机号不能为空！";
+                html_login();
+                return;
+            }
+            if(verify_code.length != 6)
+            {
+                msg = "请输入6位验证码！";
+                html_login();
+                return;
+            }
             export_act('login', type + '_' + phone_num + '_' + verify_code);
-        }
-
-
-        function html_in_progress()
-        {
-            $("#p").html('处理中...')
         }
 
         function export_loop()
         {
-            if(step == 'process')
-                export_act('progress')
-            if(step == 'starting')
-                export_act('starting')
+            if(murmur == '')
+            {
+                html('初始化...');
+                catch_murmur();
+                return;
+            }
+
+            export_act('');
         }
 
+        var lastState = '__'
         function refresh_html()
         {
-            if(step == 'init')
+            if(lastState == state && state != 'export')
+                return;
+            lastState = state;
+
+            if(state == '')
                 html_start();
-            else if(step == 'starting')
-                html_starting()
-            else if(step == 'login')
-                html_login()
-            else if(step == 'process')
-                html_in_progress()
+            else if(state == 'wait_for_login')
+                html_login();
+            else if(state == 'login')
+                html('登录中...');
+            else if(state == 'wait_for_export')
+                html_export();
+            else if(state == 'export')
+                html_exporting();
+            else if(state == 'finish')
+                html_finish();
         }
 
-        function export_act(act, args='')
+        function export_act(act='', args='')
         {
             $.ajax({
                 type: 'get',
-                url: 'export_progress?murmur=' + murmur + '&act=' + act + '&args=' + args,
+                url: 'export_progress?murmur=' + murmur + (act==''?'':('&act='+act)) + (args==''?'':('&args='+args)),
                 dataType: 'json',
                 success: function(res) {
-                    console.log(res);
-                    step = res.step;
+                    state = res.state;
                     msg = res.msg;
                     refresh_html();
                 },
@@ -107,8 +174,9 @@
             });
         }
 
-        setTimeout("export_act('init')", 500);
+        setTimeout("export_loop()", 50);
         setInterval("export_loop()", 1000);
+
 
     </script>
 
@@ -123,11 +191,8 @@
         <hr>
         <br>
     </div>
-    <ul id="p" class="list text-center">
-    </ul>
-    <br>
-    <br>
-    <br>
+    <div id="p" class="row">
+    </div>
     <footer class="navbar-fixed-bottom text-center">
         <hr>
         <font color="#909090">
