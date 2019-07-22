@@ -46,10 +46,6 @@ conf.read(cfg_path, encoding="utf-8")
 default_qq = get_cfg('default_qq')
 default_qq_name = get_cfg('default_qq_name')
 
-chrome_driver_path = frozen_path(get_cfg('chrome_driver_path'))
-chrome_option_path = frozen_path(get_cfg('chrome_option_path'))
-chrome_download_path = frozen_path(get_cfg('chrome_download_path'))
-
 zip_save_path = frozen_path(get_cfg('zip_save_path'))
 sqlite_db_path = frozen_path(get_cfg('sqlite_db_path'))
 

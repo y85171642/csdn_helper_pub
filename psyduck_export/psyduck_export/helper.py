@@ -308,6 +308,7 @@ class Helper:
         for i in range(1, 100):
             _url = format_url.format(i)
             self.get(_url)
+            time.sleep(1)
             if self.find('//dt[@class="empty_icons"]') is not None:
                 break
             els = self.find_all('//div[@class="content"]/h3/a[@target="_blank"]')
