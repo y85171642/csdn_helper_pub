@@ -14,6 +14,7 @@ class Export:
     msg = ''
     signal = ''
     signal_args = None
+    cd = 0
 
     def __init__(self, uuid):
         self.uuid = uuid
@@ -74,6 +75,7 @@ class Export:
         self.state = 'login'
         _login_msg = ''
         while _login_msg != '' or not self.helper.check_login():
+            self.cd = 360
             self.state = 'wait_for_login'
             while self.signal != 'login':
                 if self.signal == 'quit':
@@ -88,10 +90,12 @@ class Export:
         self.msg = ''
 
         self.state = 'wait_for_export'
+        self.cd = 360
         while self.signal != 'export':
             if self.signal == 'quit':
                 return
             time.sleep(0.1)
+
         self.reset_signal()
         self.state = 'export'
         self.helper.export_all()
@@ -101,6 +105,7 @@ class Export:
         else:
             self.state = 'finish'
         self.dispose_helper()
+        self.cd = 720
 
 
 exports: {str, Export} = {}
@@ -111,8 +116,8 @@ def dispose_all():
         u.reset()
 
 
-def _response(state, msg=''):
-    return HttpResponse(json.dumps({'state': state, 'msg': msg}), content_type='application/json')
+def _response(state, msg, cd):
+    return HttpResponse(json.dumps({'state': state, 'msg': msg, 'cd': cd}), content_type='application/json')
 
 
 def export(request):
@@ -167,4 +172,9 @@ def export_progress(request):
     elif exp.state == 'failed' and act == 'quit':
         exp.quit()
 
-    return _response(exp.state, exp.msg)
+    if exp.state == 'failed' or exp.state == 'finish' or exp.state == 'wait_for_login' or exp.state == 'wait_for_export':
+        exp.cd -= 1
+        if exp.cd < 0:
+            exp.quit()
+    _cd = "{}:{}".format(int(exp.cd / 60), int(exp.cd % 60))
+    return _response(exp.state, exp.msg, _cd)
