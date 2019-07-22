@@ -21,7 +21,6 @@ from django.contrib import staticfiles
 urlpatterns = [
     path('export', view.export),
     path('export_progress', view.export_progress),
-    path('export_start', view.export_start),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -18,6 +18,11 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.argv.append('')
-    sys.argv[1] = 'runserver'
-    main()
+    try:
+        import psyduck_export.view
+        psyduck_export.view.dispose_all()
+        main()
+    except InterruptedError:
+        import psyduck_export.view
+
+        psyduck_export.view.dispose_all()

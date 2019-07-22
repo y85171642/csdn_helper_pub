@@ -117,7 +117,7 @@ def dispose():
     global is_driver_busy
     if driver is not None:
         driver.stop_client()
-        driver.close()
+        driver.quit()
         driver = None
     is_driver_busy = False
 
