@@ -22,6 +22,8 @@ class Helper:
     export_url_list = []
     export_name_list = []
     export_index = 0
+    export_collecting = False
+    export_downloading = False
 
     def __init__(self, uuid):
         self.uuid = uuid
@@ -42,11 +44,11 @@ class Helper:
         self.is_ready = False
         self.data_root = config.frozen_path('user_data')
         self.data_path = config.frozen_path(os.path.join(self.data_root, self.uuid))
-        self.driver_path = config.frozen_path(os.path.join(self.data_path, 'chromedriver'))
+        self.driver_path = config.frozen_path(os.path.join(self.data_path, Helper._get_driver_name('chromedriver')))
         self.option_path = config.frozen_path(os.path.join(self.data_path, 'chrome_option'))
         self.download_path = config.frozen_path(os.path.join(self.data_path, 'download'))
-        self.export_path = os.path.abspath(config.frozen_path('../static/{}'.format(self.uuid)))
-        self.zip_export_path = os.path.abspath(config.frozen_path('../static/{}.zip'.format(self.uuid)))
+        self.export_path = os.path.abspath(config.frozen_path('../static/exports/{}'.format(self.uuid)))
+        self.zip_export_path = os.path.abspath(config.frozen_path('../static/exports/{}.zip'.format(self.uuid)))
         self.zip_save_path = config.frozen_path(config.zip_save_path)
 
     def __prepare(self):
@@ -97,6 +99,8 @@ class Helper:
         self.__prepare()
         self.__selenium_init()
         self.is_ready = True
+        self.export_collecting = False
+        self.export_downloading = False
 
     def reset_timeout(self):
         self.driver.set_page_load_timeout(10)
@@ -141,9 +145,11 @@ class Helper:
     def dispose(self):
         if self.driver is not None:
             self.driver.stop_client()
-            self.driver.close()
+            self.driver.quit()
             self.driver = None
         self.is_ready = False
+        self.export_downloading = False
+        self.export_collecting = False
 
     def check_login(self):
         self.get("https://i.csdn.net/#/uc/profile")
@@ -298,6 +304,7 @@ class Helper:
         format_url = 'https://download.csdn.net/my/uploads/1/{}'
         res_url = []
         res_name = []
+        self.export_collecting = True
         for i in range(1, 100):
             _url = format_url.format(i)
             self.get(_url)
@@ -309,12 +316,15 @@ class Helper:
                     continue
                 res_url.append(el.get_attribute('href'))
                 res_name.append(el.text.strip())
+        self.export_collecting = False
+        self.export_downloading = True
         self.export_url_list = res_url
         self.export_name_list = res_name
         for i in range(0, len(res_url)):
             self.export_index = i
             self.download(res_url[i])
         self.__zip_export()
+        self.export_downloading = False
 
     def __get_download_info(self):
         import datetime
@@ -366,7 +376,6 @@ class Helper:
         zip_path = os.path.join(self.zip_save_path, "{0}.zip".format(_id))
         if os.path.exists(zip_path):
             os.remove(zip_path)
-            print('zip exist, then delete!')
         with zipfile.ZipFile(zip_path, mode='w') as zipf:
             file_path = self.__get_tmp_download_file()
             zipf.write(file_path, os.path.basename(file_path))
@@ -374,8 +383,8 @@ class Helper:
     def __get_file_name_in_zip_file(self, _id):
         import zipfile
         zip_path = os.path.join(self.zip_save_path, "{0}.zip".format(_id))
-        zipf = zipfile.ZipFile(zip_path)
-        files = zipf.namelist()
+        zip_f = zipfile.ZipFile(zip_path)
+        files = zip_f.namelist()
         if len(files) != 1:
             return None
         return files[0]

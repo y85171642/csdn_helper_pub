@@ -19,8 +19,8 @@ def main():
 
 if __name__ == '__main__':
     try:
-        sys.argv.append('')
-        sys.argv[1] = 'runserver'
+        import psyduck_export.view
+        psyduck_export.view.dispose_all()
         main()
     except InterruptedError:
         import psyduck_export.view
