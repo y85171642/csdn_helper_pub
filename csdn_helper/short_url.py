@@ -1,7 +1,6 @@
 import requests
 import config
 from urllib import parse
-from time import time
 
 
 def get(url):

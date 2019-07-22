@@ -104,6 +104,7 @@ async def handle_msg_group(context):
         msg += '\n* 输入CSDN下载页链接下载'
         msg += source_code_tail()
         msg += donate_tail()
+        msg += export_tail()
         last_cmd = cmd
         await bot.send(context, msg)
 
@@ -189,6 +190,7 @@ async def handle_msg_group(context):
             msg += '\n* 输入CSDN下载页链接下载'
             msg += source_code_tail()
             msg += donate_tail()
+            msg += export_tail()
             await bot.send(context, msg)
 
     download_id = find_csdn_download_id(context['message'])
@@ -235,6 +237,12 @@ def source_code_tail():
 def donate_tail():
     if config.donate_url != '':
         return '\n* 黄鸭捐助 %s' % short_url.get(config.donate_url)
+    return ''
+
+
+def export_tail():
+    if config.export_url != '':
+        return '\n* 资源导出 %s' % short_url.get(config.export_url)
     return ''
 
 
@@ -332,13 +340,17 @@ def build_donors(start_index=0):
     if start_index >= len(config.donate_list):
         return '没有更多信息了。'
     _len = min(10, len(config.donate_list) - start_index)
-    msg = '捐赠名单（{}~{}）：'.format(start_index + 1, start_index + _len)
+    msg = '捐赠名单 共{}条（{}~{}）：'.format(len(config.donate_list), start_index + 1, start_index + _len)
+    total = 0
+    for i in range(0, len(config.donate_list)):
+        total += float(config.donate_list[i]['money'])
     for i in range(start_index, start_index + _len):
         donor = config.donate_list[i]
         name = build_name_str(donor['name'])
         rmb = donor['money']
         msg += '\n{}\t￥{}'.format(name, rmb)
     msg += sep_l()
+    msg += '\n{}\t￥{}'.format(build_name_str('共计'), total)
     msg += '\n-more 获取更多信息'
     return msg
 

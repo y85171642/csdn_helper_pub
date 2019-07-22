@@ -40,6 +40,7 @@ class Export:
             time.sleep(0.05)
         self.reset()
         self.remove_user_data()
+        print('{} quit system'.format(self.uuid))
 
     def remove_user_data(self):
         import os.path
@@ -75,7 +76,7 @@ class Export:
         self.state = 'login'
         _login_msg = ''
         while _login_msg != '' or not self.helper.check_login():
-            self.cd = 360
+            self.cd = 180
             self.state = 'wait_for_login'
             while self.signal != 'login':
                 if self.signal == 'quit':
@@ -105,15 +106,37 @@ class Export:
         else:
             self.state = 'finish'
         self.dispose_helper()
-        self.cd = 720
+        self.cd = 1800
+        print('{} export over state: {}'.format(self.uuid, self.state))
 
 
 exports: {str, Export} = {}
 
+time_thread = None
+
+
+def time_thread_start():
+    global time_thread
+    if time_thread is not None:
+        return
+    time_thread = Thread(target=time_thread_loop)
+    time_thread.start()
+
+
+def time_thread_loop():
+    cd_state = ['failed', 'finish', 'wait_for_login', 'wait_for_export']
+    while True:
+        for exp in exports.values():
+            if exp.state in cd_state:
+                exp.cd -= 0.5
+                if exp.cd < 0:
+                    exp.quit()
+        time.sleep(0.5)
+
 
 def dispose_all():
-    for u in exports:
-        u.reset()
+    for u in exports.values():
+        u.quit()
 
 
 def _response(state, msg, cd):
@@ -121,6 +144,7 @@ def _response(state, msg, cd):
 
 
 def export(request):
+    time_thread_start()
     return render(request, 'index.html')
 
 
@@ -136,18 +160,19 @@ def export_progress(request):
 
     exp = exports[uuid]
     if exp.state == '' and act == 'start':
+        print('{} enter system'.format(uuid))
         exp.start()
-    elif exp.state == 'wait_for_login' and act == 'get_verify_code':
-        exp.set_signal('get_verify_code', {args})
     elif exp.state == 'wait_for_login' and act == 'login':
         _type = args.split('_')[0]
         _phone_num = args.split('_')[1]
         _verify_code = args.split('_')[2]
         exp.set_signal('login', {'phone_num': _phone_num, 'verify_code': _verify_code})
+        print('{} login with phone: {} code: {}'.format(uuid, _phone_num, _verify_code))
     elif exp.state == 'wait_for_login' and act == 'quit':
         exp.quit()
     elif exp.state == 'wait_for_export' and act == 'export':
         exp.set_signal('export')
+        print('{} export begin'.format(uuid))
     elif exp.state == 'wait_for_export' and act == 'quit':
         exp.quit()
     elif exp.state == 'export':
@@ -171,10 +196,8 @@ def export_progress(request):
         exp.reset()
     elif exp.state == 'failed' and act == 'quit':
         exp.quit()
-
-    if exp.state == 'failed' or exp.state == 'finish' or exp.state == 'wait_for_login' or exp.state == 'wait_for_export':
-        exp.cd -= 1
-        if exp.cd < 0:
-            exp.quit()
-    _cd = "{}:{}".format(int(exp.cd / 60), int(exp.cd % 60))
+    if exp.cd <= 0:
+        _cd = ""
+    else:
+        _cd = "{}:{}".format(int(exp.cd / 60), int(exp.cd % 60))
     return _response(exp.state, exp.msg, _cd)
