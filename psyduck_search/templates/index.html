@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="/static/images/psyduck.ico"/>
+    <link rel="bookmark" href="/static/images/psyduck.ico"/>
+    <script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.js"></script>
+    <script>
+        var state = '';
+        var murmur = '';
+        var result_count = 0;
+        var result_json;
+
+        function catch_murmur()
+        {
+            setTimeout(function ()
+            {
+                Fingerprint2.get(function (components)
+                {
+                    var values = components.map(function (component) { return component.value })
+                    murmur = Fingerprint2.x64hash128(values.join(''), 31)
+                })
+            }, 500)
+        }
+
+        function clearCookies()
+        {
+            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+            if(keys)
+            {
+                for(var i = keys.length; i--;)
+                    document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+            }
+        }
+
+        function refresh_html()
+        {
+            $("#p").html('\
+                搜索到：'+result_count+' 个免费资源\
+            ');
+        }
+
+        function search_begin()
+        {
+            var keyword = $("#keyword").val();
+            var sort_type = $("#sort_type").val();
+            var source_type = $("#source_type").val();
+            if(keyword == '' || sort_type == '' || source_type == '')
+                return;
+
+            var split = '_%split%_'
+            search_act('begin', keyword + split + sort_type + split + source_type);
+        }
+
+        function search_clear()
+        {
+            search_act('clear');
+        }
+
+        function onKeyDown(event)
+        {
+             var e = event || window.event || arguments.callee.caller.arguments[0];
+             if(e && e.keyCode==13)// enter 键
+             {
+                search_begin();
+             }
+        }
+
+        var last_result_count = -1;
+        function search_loop()
+        {
+            if(murmur == '')
+                return;
+            if(last_result_count != result_count)
+            {
+                search_act('result');
+                last_result_count = result_count;
+                return;
+            }
+
+            search_act();
+        }
+
+        function search_act(act='', args='')
+        {
+            $.ajax({
+                type: 'get',
+                url: 'search_progress?murmur=' + murmur + (act==''?'':'&act='+act) + (args==''?'':'&args='+args),
+                dataType: 'json',
+                success: function(res) {
+                    state = res.state;
+                    result_count = res.result_count;
+                    if(res.result_json != '')
+                        result_json = res.result_json;
+                    refresh_html();
+                },
+                error: function() {
+                    console.log('请求失败~');
+                }
+            });
+        }
+
+        setTimeout("clearCookies()", 50);
+        setTimeout("catch_murmur()", 50);
+        setInterval("search_loop()", 1000);
+    </script>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="text-center" style="margin-left:5%; margin-right:5%;">
+        <br>
+        <h2 class="text-muted"><b> CSDN 0积分资源搜索</b></h2>
+        <p class="text-primary" id="cost"></p>
+        <hr>
+        <br>
+    </div>
+    <div style="margin-left:5%; margin-right:5%;">
+        <div class="input-group form-group">
+            <input type="text" id="keyword" tabindex="1" class="form-control" placeholder="请输入关键字搜索"
+                   onkeydown="onKeyDown(event)"/>
+            <span class="input-group-btn">
+               <button type="button" class="btn btn-info btn-search glyphicon glyphicon-search"
+                       style="margin-top: -1px;" onclick="search_begin()">
+               </button>
+            </span>
+        </div>
+        <div class="form-group form-inline">
+            <select data-placeholder="资源类型" name="carOwner" id="source_type"
+                    class="form-control chosen-select" tabindex="3" required>
+                <option value="10">全部类型</option>
+                <option value="1">文档类</option>
+                <option value="3">工具类</option>
+                <option value="2">代码类</option>
+                <option value="4">其他</option>
+            </select>
+            <select data-placeholder="排序类型" name="carOwner" id="sort_type"
+                    class="form-control chosen-select" tabindex="2" required>
+                <option value="0">最新上传</option>
+                <option value="1">最多下载</option>
+                <option value="2">默认排序</option>
+            </select>
+        </div>
+        <hr>
+        <div class="form-group form-inline">
+            <label class="text text-success">搜索结果：</label>
+            <button type="button" class="btn btn-danger pull-right" onclick="search_clear()"> 清空结果</button>
+        </div>
+        <div id="p" class="row">
+        </div>
+    </div>
+    <footer class="navbar-fixed-bottom text-center">
+        <hr>
+        <p class="text-muted">
+            免责声明：<br>
+            有关资源均来自网络收集与网友提供，任何涉及商业盈利目的的均不得使用，否则产生的一切后果将由您自己承担！<br>
+            如果本平台存在的内容对您和您的利益产生损害，请立即私信我们，将在最短时间内对其更正。
+            请联系邮箱：799329256@qq.com <br>
+        </p>
+    </footer>
+</div>
+</body>
+</html>
