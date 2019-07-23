@@ -142,6 +142,7 @@
             export_act('login', type + '_' + phone_num + '_' + verify_code);
         }
 
+        var lastAct = '__';
         function export_loop()
         {
             if(murmur == '')
@@ -151,10 +152,17 @@
                 return;
             }
 
-            export_act('');
+            if(state == '' && lastAct == '')
+            {
+                return;
+            }
+
+            lastAct = '';
+
+            export_act();
         }
 
-        var lastState = '__'
+        var lastState = '__';
         function refresh_html()
         {
             if(lastState == state && state != 'export')
@@ -187,6 +195,16 @@
                 $("#cd").html('');
         }
 
+        function clearCookies()
+        {
+            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+            if(keys)
+            {
+                for(var i = keys.length; i--;)
+                    document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+            }
+        }
+
         function export_act(act='', args='')
         {
             $.ajax({
@@ -206,6 +224,7 @@
             });
         }
 
+        setTimeout("clearCookies()",50);
         setTimeout("export_loop()", 50);
         setInterval("export_loop()", 1000);
 

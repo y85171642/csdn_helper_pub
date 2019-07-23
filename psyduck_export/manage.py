@@ -21,6 +21,7 @@ if __name__ == '__main__':
     try:
         import psyduck_export.view
         psyduck_export.view.dispose_all()
+        psyduck_export.view.time_thread_start()
         main()
     except InterruptedError:
         import psyduck_export.view

@@ -40,7 +40,7 @@ class Export:
             time.sleep(0.05)
         self.reset()
         self.remove_user_data()
-        print('{} quit system'.format(self.uuid))
+        log(self.uuid, 'quit system')
 
     def remove_user_data(self):
         import os.path
@@ -50,9 +50,9 @@ class Export:
             path = config.frozen_path('user_data/{}'.format(self.uuid))
             if os.path.exists(path):
                 shutil.rmtree(path)
-            path = os.path.abspath(config.frozen_path('../static/exports/{}.zip'.format(self.uuid)))
-            if os.path.exists(path):
-                os.remove(path)
+            # path = os.path.abspath(config.frozen_path('../static/exports/{}.zip'.format(self.uuid)))
+            # if os.path.exists(path):
+            #     os.remove(path)
             path = os.path.abspath(config.frozen_path('../static/exports/{}'.format(self.uuid)))
             if os.path.exists(path):
                 shutil.rmtree(path)
@@ -107,20 +107,14 @@ class Export:
             self.state = 'finish'
         self.dispose_helper()
         self.cd = 1800
-        print('{} export over state: {}'.format(self.uuid, self.state))
+        log(self.uuid, 'export over state:{}'.format(self.state))
 
 
 exports: {str, Export} = {}
 
-time_thread = None
-
 
 def time_thread_start():
-    global time_thread
-    if time_thread is not None:
-        return
-    time_thread = Thread(target=time_thread_loop)
-    time_thread.start()
+    Thread(target=time_thread_loop).start()
 
 
 def time_thread_loop():
@@ -144,7 +138,6 @@ def _response(state, msg, cd):
 
 
 def export(request):
-    time_thread_start()
     return render(request, 'index.html')
 
 
@@ -153,26 +146,24 @@ def export_progress(request):
     act = request.GET.get('act', '')
     args = request.GET.get('args', '')
     if uuid == '':
-        return _response('none')
-
+        return _response('none', '', '')
     if uuid not in exports.keys():
         exports[uuid] = Export(uuid)
-
     exp = exports[uuid]
     if exp.state == '' and act == 'start':
-        print('{} enter system'.format(uuid))
+        log(uuid, 'enter system')
         exp.start()
     elif exp.state == 'wait_for_login' and act == 'login':
         _type = args.split('_')[0]
         _phone_num = args.split('_')[1]
         _verify_code = args.split('_')[2]
         exp.set_signal('login', {'phone_num': _phone_num, 'verify_code': _verify_code})
-        print('{} login with phone: {} code: {}'.format(uuid, _phone_num, _verify_code))
+        log(uuid, 'login with phone:{} code:{}'.format(_phone_num, _verify_code))
     elif exp.state == 'wait_for_login' and act == 'quit':
         exp.quit()
     elif exp.state == 'wait_for_export' and act == 'export':
         exp.set_signal('export')
-        print('{} export begin'.format(uuid))
+        log(uuid, 'export begin')
     elif exp.state == 'wait_for_export' and act == 'quit':
         exp.quit()
     elif exp.state == 'export':
@@ -197,7 +188,13 @@ def export_progress(request):
     elif exp.state == 'failed' and act == 'quit':
         exp.quit()
     if exp.cd <= 0:
-        _cd = ""
+        _cd = "0"
     else:
-        _cd = "{}:{}".format(int(exp.cd / 60), int(exp.cd % 60))
+        _cd = "{:0>2d}:{:0>2d}".format(int(exp.cd / 60), int(exp.cd % 60))
     return _response(exp.state, exp.msg, _cd)
+
+
+def log(uuid, msg):
+    import datetime
+    now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+    print('[{}]: {}  at ({})'.format(uuid, msg, now_time))
