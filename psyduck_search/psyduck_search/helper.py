@@ -18,7 +18,7 @@ class Helper:
     search_result = {}
     search_total = 0
     search_index = 0
-    driver_name = 'phantomjs'
+    driver_name = 'chromedriver'
 
     def __init__(self, uuid):
         self.uuid = uuid
@@ -58,7 +58,7 @@ class Helper:
             options.add_argument('disable-infobars')
             options.add_argument('--mute-audio')
             options.add_argument('--disable-gpu')
-            options.add_argument("--log-level=3")
+            options.add_argument("log-level=3")
             options.add_argument("--ignore-certificate-errors")
             options.add_argument("--headless")
 
