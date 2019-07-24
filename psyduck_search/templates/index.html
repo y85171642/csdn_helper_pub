@@ -45,17 +45,22 @@
                 if(result_count == 0)
                 {
                     $("#result_title").html("");
+                    $("#search_warning").html("");
                     $("#result_count").html("");
                 }
                 else
                 {
                     $("#result_title").html("搜索完成");
+                    $("#result_title").attr("class","label label-success form-group");
+                    $("#search_warning").html("");
                     $("#result_count").html("共 "+result_count+" 个免费资源");
                 }
             }
             else if(state == 'init')
             {
                 $("#result_title").html("初始化...");
+                $("#result_title").attr("class","label label-warning form-group");
+                $("#search_warning").html("");
                 $("#result_count").html("");
             }
             else if(state == 'search')
@@ -63,6 +68,8 @@
                 var _dots = ['.','..','...'];
                 $("#result_title").html('搜索中' + _dots[_dot_index]);
                 _dot_index = ++_dot_index % _dots.length;
+                $("#result_title").attr("class","label label-warning form-group");
+                $("#search_warning").html('搜索过程较慢，请耐心等待！');
                 $("#result_count").html("共 "+result_count+" 个免费资源");
             }
 
@@ -198,6 +205,7 @@
     <div class="form-group form-inline">
         <label id="result_title" class="label label-warning form-group"></label>
         <label id="result_count" class="label label-primary form-group"></label>
+        <label id="search_warning" class="label label-danger form-group pull-right"></label>
     </div>
     <div id="p">
     </div>

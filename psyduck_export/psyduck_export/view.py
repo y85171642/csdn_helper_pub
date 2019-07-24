@@ -133,7 +133,20 @@ def dispose_all():
         u.quit()
 
 
+_gc_counter = 0
+
+
+def _auto_gc():
+    global _gc_counter
+    if _gc_counter > 100:
+        import gc
+        gc.collect()
+        _gc_counter = 0
+    _gc_counter += 1
+
+
 def _response(state, msg, cd):
+    _auto_gc()
     return HttpResponse(json.dumps({'state': state, 'msg': msg, 'cd': cd}), content_type='application/json')
 
 

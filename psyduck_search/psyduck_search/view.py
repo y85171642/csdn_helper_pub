@@ -46,6 +46,9 @@ class Search:
         self.reset_signal()
         self.dispose_helper()
         self.remove_user_data()
+        self.keyword = ''
+        self.sort_type = ''
+        self.source_type = ''
         self.msg = ''
         self.state = ''
 
@@ -106,7 +109,20 @@ def dispose_all():
         u.quit()
 
 
+_gc_counter = 0
+
+
+def _auto_gc():
+    global _gc_counter
+    if _gc_counter > 100:
+        import gc
+        gc.collect()
+        _gc_counter = 0
+    _gc_counter += 1
+
+
 def _response(state, result_count, result_json=''):
+    _auto_gc()
     return HttpResponse(json.dumps({'state': state, 'result_count': result_count, 'result_json': result_json}),
                         content_type='application/json')
 
@@ -126,14 +142,18 @@ def search_progress(request):
 
     sr = search_dict[uuid]
     if act == 'begin':
-        log(uuid, 'begin search {}'.format(args))
-        sr.keyword = args.split('_%split%_')[0]
-        sr.sort_type = args.split('_%split%_')[1]
-        sr.source_type = args.split('_%split%_')[2]
-        if sr.state != '':
-            sr.set_signal('stop')
-        else:
-            sr.start()
+        keyword = args.split('_%split%_')[0]
+        sort_type = args.split('_%split%_')[1]
+        source_type = args.split('_%split%_')[2]
+        if sr.keyword != keyword or sr.sort_type != sort_type or sr.source_type != source_type:
+            log(uuid, 'begin search {}'.format(keyword))
+            sr.keyword = keyword
+            sr.source_type = source_type
+            sr.sort_type = sort_type
+            if sr.state != '':
+                sr.set_signal('stop')
+            else:
+                sr.start()
     elif act == 'clear':
         log(uuid, 'clear result')
         sr.clear_result()

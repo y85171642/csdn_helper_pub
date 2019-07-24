@@ -343,7 +343,7 @@ class Helper:
             return 'https://download.csdn.net/psearch/{area}/{source}/0/{sort}/1/{keyword}/{page}' \
                 .format(area=area, source=source_type, sort=sort_type, keyword=keyword, page=page)
 
-        self.get(_page_url(1))
+        self.get_until(_page_url(1), '//div[@class="album_detail_wrap"]')
         if self.find('//div[@class="noSource"]') is not None:
             self.is_searching = False
             return
@@ -358,7 +358,7 @@ class Helper:
             text = self.find('//div[@class="page_nav"]').text[2:]
             total_page = int(text[text.find('共') + 1: text.find('页')])
         for i in range(1, total_page + 1):
-            self.get(_page_url(i))
+            self.get_until(_page_url(i), '//div[@class="album_detail_wrap"]')
 
             if signal_func is not None and signal_func() == 'stop':
                 self.is_searching = False
@@ -371,7 +371,7 @@ class Helper:
                     _urls.append(_url)
             for _url in _urls:
                 try:
-                    self.until_get(_url, '//strong[@class="size_box"]/span[1]', 2)
+                    self.get_until(_url, '//strong[@class="size_box"]/span[1]', 2)
                     self.search_result[_url] = self.__get_download_info()
                     if new_info_callback is not None:
                         new_info_callback(_url, self.search_result[_url])
@@ -382,12 +382,12 @@ class Helper:
                     return
         self.is_searching = False
 
-    def until_get(self, url, xpath, timeout=10):
+    def get_until(self, url, xpath, timeout=10):
         self.driver.get(url)
-        time.sleep(0.2)
+        time.sleep(0.5)
         while timeout > 0 and self.find(xpath) is None:
-            time.sleep(0.2)
-            timeout -= 0.2
+            time.sleep(0.5)
+            timeout -= 0.5
         if timeout <= 0:
             raise Exception('until get timeout: %s' % url)
 
