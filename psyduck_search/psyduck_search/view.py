@@ -3,8 +3,9 @@ from psyduck_search.helper import Helper
 from django.http import HttpResponse
 import json
 from threading import Thread
-
+import sys
 import datetime
+import os
 
 
 class DateEncoder(json.JSONEncoder):
@@ -168,7 +169,20 @@ def search_progress(request):
     return _response(sr.state, len(sr.result), p_i, p_n, result_json)
 
 
+def disable_prints():
+    sys.stdout = open(os.devnull, 'w')
+
+
+def enable_prints():
+    if sys.stdout == sys.__stdout__:
+        return
+    sys.stdout.close()
+    sys.stdout = sys.__stdout__
+
+
 def log(uuid, msg):
     import datetime
     now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+    enable_prints()
     print('[{}]: {} at ({})'.format(uuid, msg, now_time))
+    disable_prints()

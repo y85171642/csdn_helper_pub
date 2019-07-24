@@ -22,6 +22,8 @@ if __name__ == '__main__':
 
     try:
         psyduck_search.view.dispose_all()
+        psyduck_search.view.disable_prints()
+        psyduck_search.view.log('system', 'startup')
         main()
     except InterruptedError:
         psyduck_search.view.dispose_all()
