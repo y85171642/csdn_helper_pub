@@ -120,7 +120,7 @@ class Helper:
         self.search_index = 0
         self.search_result = {}
         from urllib import parse
-        keyword = parse.urlencode({'_': keyword})[2:]
+        keyword = parse.quote(keyword)
 
         def _page_url(page):
             return 'https://download.csdn.net/psearch/{area}/{source}/0/{sort}/1/{keyword}/{page}' \
