@@ -58,6 +58,7 @@ class Helper:
         options.add_argument('--mute-audio')
         options.add_argument('--disable-gpu')
         options.add_argument("--log-level=3")
+        options.add_argument("--ignore-certificate-errors")
         options.add_argument("--headless")
 
         prefs = {
