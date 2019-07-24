@@ -171,6 +171,7 @@ def search_progress(request):
 
 def disable_prints():
     sys.stdout = open(os.devnull, 'w')
+    sys.stderr = None
 
 
 def enable_prints():
@@ -178,6 +179,7 @@ def enable_prints():
         return
     sys.stdout.close()
     sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
 
 def log(uuid, msg):
