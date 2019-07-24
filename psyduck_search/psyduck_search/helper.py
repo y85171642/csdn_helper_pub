@@ -127,7 +127,7 @@ class Helper:
                 .format(area=area, source=source_type, sort=sort_type, keyword=keyword, page=page)
 
         try:
-            self.get_until(_page_url(1), '//div[@class="album_detail_wrap"]')
+            self.get_until(_page_url(1), '//div[@class="baiduWrap"]')
         except:
             self.is_searching = False
             return
@@ -150,7 +150,7 @@ class Helper:
         self.search_total = 20 * total_page
 
         for i in range(1, total_page + 1):
-            self.get_until(_page_url(i), '//div[@class="album_detail_wrap"]')
+            self.get_until(_page_url(i), '//div[@class="baiduWrap"]')
 
             if signal_func is not None and signal_func() == 'stop':
                 self.is_searching = False
