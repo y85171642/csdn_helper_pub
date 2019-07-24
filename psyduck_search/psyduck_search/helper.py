@@ -18,18 +18,18 @@ class Helper:
     search_result = {}
     search_total = 0
     search_index = 0
+    driver_name = 'phantomjs'
 
     def __init__(self, uuid):
         self.uuid = uuid
 
-    @staticmethod
-    def _create_dir(_dir):
+    def _create_dir(self, _dir):
         _dir = config.frozen_path(_dir)
         if not os.path.exists(_dir):
             os.mkdir(_dir)
 
-    @staticmethod
-    def _get_driver_name(name='chromedriver'):
+    def _get_driver_name(self, ):
+        name = self.driver_name
         if platform.system() == 'Windows' and not name.endswith('.exe'):
             name += ".exe"
         return name
@@ -38,47 +38,55 @@ class Helper:
         self.is_ready = False
         self.data_root = config.frozen_path('user_data')
         self.data_path = config.frozen_path(os.path.join(self.data_root, self.uuid))
-        self.driver_path = config.frozen_path(os.path.join(self.data_path, Helper._get_driver_name()))
+        self.driver_path = config.frozen_path(os.path.join(self.data_path, self._get_driver_name()))
         self.option_path = config.frozen_path(os.path.join(self.data_path, 'chrome_option'))
 
     def __prepare(self):
-        Helper._create_dir(self.data_root)
-        Helper._create_dir(self.data_path)
+        self._create_dir(self.data_root)
+        self._create_dir(self.data_path)
         import shutil
-        _raw_driver_path = config.frozen_path(os.path.join('chrome_driver', Helper._get_driver_name()))
+        _raw_driver_path = config.frozen_path(os.path.join('chrome_driver', self._get_driver_name()))
         _driver_dir = os.path.dirname(self.driver_path)
-        Helper._create_dir(_driver_dir)
+        self._create_dir(_driver_dir)
         os.chmod(_driver_dir, 0o777)
         shutil.copyfile(_raw_driver_path, self.driver_path)
 
     def __selenium_init(self):
-        options = selenium.webdriver.ChromeOptions()
-        options.add_argument("user-data-dir=" + self.option_path)
-        options.add_argument('disable-infobars')
-        options.add_argument('--mute-audio')
-        options.add_argument('--disable-gpu')
-        options.add_argument("--log-level=3")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--headless")
+        if self.driver_name == 'chromedriver':
+            options = selenium.webdriver.ChromeOptions()
+            options.add_argument("user-data-dir=" + self.option_path)
+            options.add_argument('disable-infobars')
+            options.add_argument('--mute-audio')
+            options.add_argument('--disable-gpu')
+            options.add_argument("--log-level=3")
+            options.add_argument("--ignore-certificate-errors")
+            options.add_argument("--headless")
 
-        prefs = {
-            "disable-popup-blocking": False,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "profile.default_content_settings.popups": 0,
-            'profile.default_content_setting_values': {'notifications': 2},
-        }
+            prefs = {
+                "disable-popup-blocking": False,
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "profile.default_content_settings.popups": 0,
+                'profile.default_content_setting_values': {'notifications': 2},
+            }
 
-        from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-        cap = DesiredCapabilities.CHROME
-        cap["pageLoadStrategy"] = "none"
+            from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+            cap = DesiredCapabilities.CHROME
+            cap["pageLoadStrategy"] = "none"
 
-        options.add_experimental_option("prefs", prefs)
-        os.chmod(self.driver_path, 0o777)
+            options.add_experimental_option("prefs", prefs)
+            os.chmod(self.driver_path, 0o777)
 
-        self.driver = selenium.webdriver.Chrome(options=options, executable_path=self.driver_path,
-                                                desired_capabilities=cap)
-        self.reset_timeout()
+            self.driver = selenium.webdriver.Chrome(options=options, executable_path=self.driver_path,
+                                                    desired_capabilities=cap)
+            self.reset_timeout()
+        else:
+            os.chmod(self.driver_path, 0o777)
+            cap = selenium.webdriver.DesiredCapabilities.PHANTOMJS
+            cap["phantomjs.page.settings.loadImages"] = False
+            cap["pageLoadStrategy"] = "none"
+            self.driver = selenium.webdriver.PhantomJS(executable_path=self.driver_path, desired_capabilities=cap)
+            self.reset_timeout();
 
     def init(self):
         self.__settings()
@@ -190,6 +198,7 @@ class Helper:
             time.sleep(0.5)
             timeout -= 0.5
         if timeout <= 0:
+            print('until get timeout: %s' % url)
             raise Exception('until get timeout: %s' % url)
 
     def __get_download_info(self):

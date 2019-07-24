@@ -100,7 +100,7 @@ search_dict: {str, Search} = {}
 
 def dispose_all():
     for u in search_dict.values():
-        u.quit()
+        u.reset()
 
 
 _gc_counter = 0
