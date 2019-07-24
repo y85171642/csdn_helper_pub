@@ -151,7 +151,11 @@ class Helper:
         self.search_total = 20 * total_page
 
         for i in range(1, total_page + 1):
-            self.get_until(_page_url(i), '//div[@class="baiduWrap"]')
+            try:
+                self.get_until(_page_url(i), '//div[@class="baiduWrap"]')
+            except:
+                self.search_total -= 20
+                continue
 
             if signal_func is not None and signal_func() == 'stop':
                 self.is_searching = False
