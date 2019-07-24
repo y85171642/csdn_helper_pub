@@ -370,19 +370,21 @@ class Helper:
                 if _url not in self.search_result.keys():
                     _urls.append(_url)
             for _url in _urls:
-                self.until_get(_url, '//strong[@class="size_box"]/span[1]')
-                self.search_result[_url] = self.__get_download_info()
-                if new_info_callback is not None:
-                    new_info_callback(_url, self.search_result[_url])
+                try:
+                    self.until_get(_url, '//strong[@class="size_box"]/span[1]', 2)
+                    self.search_result[_url] = self.__get_download_info()
+                    if new_info_callback is not None:
+                        new_info_callback(_url, self.search_result[_url])
+                except:
+                    pass
                 if signal_func is not None and signal_func() == 'stop':
                     self.is_searching = False
                     return
         self.is_searching = False
 
-    def until_get(self, url, xpath):
+    def until_get(self, url, xpath, timeout=10):
         self.driver.get(url)
         time.sleep(0.2)
-        timeout = 10
         while timeout > 0 and self.find(xpath) is None:
             time.sleep(0.2)
             timeout -= 0.2

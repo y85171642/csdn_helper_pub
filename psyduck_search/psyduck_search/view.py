@@ -25,6 +25,7 @@ class Search:
     keyword = ''
     sort_type = ''
     source_type = ''
+    tag = -1
     result = {}
 
     def __init__(self, uuid):
@@ -76,7 +77,7 @@ class Search:
 
     def __export_thread(self):
         self.helper = Helper(self.uuid)
-        self.state = 'helper_init'
+        self.state = 'init'
         self.helper.init()
         self.state = 'search'
 
@@ -84,7 +85,7 @@ class Search:
             return self.signal
 
         def __new_info(url, info):
-            if url not in self.result.keys():
+            if info['coin'] == 0 and url not in self.result.keys():
                 self.result[url] = info
 
         self.helper.search(keyword=self.keyword, sort_type=self.sort_type, source_type=self.source_type,
@@ -122,8 +123,8 @@ def search_progress(request):
         return _response('none', '', '')
     if uuid not in search_dict.keys():
         search_dict[uuid] = Search(uuid)
+
     sr = search_dict[uuid]
-    result_json = ''
     if act == 'begin':
         log(uuid, 'begin search {}'.format(args))
         sr.keyword = args.split('_%split%_')[0]
@@ -136,8 +137,11 @@ def search_progress(request):
     elif act == 'clear':
         log(uuid, 'clear result')
         sr.clear_result()
-    elif act == 'result':
-        result_json = json.dumps(sr.result,cls=DateEncoder)
+
+    result_json = ''
+    if act == 'result' or sr.tag != len(sr.result):
+        result_json = json.dumps(sr.result, cls=DateEncoder)
+        sr.tag = len(sr.result)
     return _response(sr.state, len(sr.result), result_json)
 
 
