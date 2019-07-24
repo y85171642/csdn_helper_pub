@@ -13,6 +13,8 @@
         var murmur = '';
         var result_count = 0;
         var result_json = '';
+        var progress_i = 0;
+        var progress_n = 0;
         var _last_result_count = -1;
 
         function catch_murmur()
@@ -45,16 +47,16 @@
                 if(result_count == 0)
                 {
                     $("#result_title").html("");
-                    $("#search_warning").html("");
                     $("#result_count").html("");
                 }
                 else
                 {
                     $("#result_title").html("搜索完成");
                     $("#result_title").attr("class","label label-success form-group");
-                    $("#search_warning").html("");
                     $("#result_count").html("共 "+result_count+" 个免费资源");
                 }
+                $("#search_warning").html("");
+                $("#progress").html("");
             }
             else if(state == 'init')
             {
@@ -62,15 +64,27 @@
                 $("#result_title").attr("class","label label-warning form-group");
                 $("#search_warning").html("");
                 $("#result_count").html("");
+                $("#progress").html("");
             }
             else if(state == 'search')
             {
+                var percent = progress_n == 0 ? 0 : parseInt(progress_i / progress_n * 100);
+
                 var _dots = ['.','..','...'];
-                $("#result_title").html('搜索中' + _dots[_dot_index]);
+                $("#result_title").html('搜索中('+percent+'%)' + _dots[_dot_index]);
                 _dot_index = ++_dot_index % _dots.length;
                 $("#result_title").attr("class","label label-warning form-group");
                 $("#search_warning").html('搜索过程较慢，请耐心等待！');
                 $("#result_count").html("共 "+result_count+" 个免费资源");
+
+                $("#progress").html('\
+                <div class="progress form-group" style="height:5px;">\
+                    <div class="progress-bar progress-bar-success" role="progressbar"\
+                         aria-valuenow="'+percent+'" aria-valuemin="0" aria-valuemax="100"\
+                         style="width: '+percent+'%;height:5px;">\
+                    </div>\
+                </div>\
+                ');
             }
 
             if(_last_result_count != result_count && result_json != '')
@@ -151,6 +165,8 @@
                 success: function(res) {
                     state = res.state;
                     result_count = res.result_count;
+                    progress_i = res.p_i;
+                    progress_n = res.p_n;
                     if(res.result_json != '')
                         result_json = res.result_json;
                     refresh_html();
@@ -164,7 +180,6 @@
         setTimeout("clearCookies()", 50);
         setTimeout("catch_murmur()", 50);
         setInterval("search_loop()", 1000);
-
     </script>
 </head>
 
@@ -201,14 +216,13 @@
         </select>
         <button type="button" class="btn btn-danger form-group" onclick="search_clear()"> 清空结果</button>
     </div>
-    <hr>
     <div class="form-group form-inline">
         <label id="result_title" class="label label-warning form-group"></label>
         <label id="result_count" class="label label-primary form-group"></label>
         <label id="search_warning" class="label label-danger form-group pull-right"></label>
     </div>
-    <div id="p">
-    </div>
+    <div id="progress"></div>
+    <div id="p"></div>
     <div class="row" style="height:120px;"></div>
 </div>
 <footer class="text-center navbar-fixed-bottom" style="background:linear-gradient(#ffffff00,#ffffffff);">

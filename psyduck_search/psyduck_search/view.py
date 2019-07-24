@@ -60,12 +60,6 @@ class Search:
             path = config.frozen_path('user_data/{}'.format(self.uuid))
             if os.path.exists(path):
                 shutil.rmtree(path)
-            # path = os.path.abspath(config.frozen_path('../static/exports/{}.zip'.format(self.uuid)))
-            # if os.path.exists(path):
-            #     os.remove(path)
-            path = os.path.abspath(config.frozen_path('../static/exports/{}'.format(self.uuid)))
-            if os.path.exists(path):
-                shutil.rmtree(path)
         except:
             import traceback
             traceback.print_exc()
@@ -121,10 +115,11 @@ def _auto_gc():
     _gc_counter += 1
 
 
-def _response(state, result_count, result_json=''):
+def _response(state, result_count=0, p_i=0, p_n=0, result_json=''):
     _auto_gc()
-    return HttpResponse(json.dumps({'state': state, 'result_count': result_count, 'result_json': result_json}),
-                        content_type='application/json')
+    return HttpResponse(
+        json.dumps({'state': state, 'result_count': result_count, 'p_i': p_i, 'p_n': p_n, 'result_json': result_json}),
+        content_type='application/json')
 
 
 def search(request):
@@ -136,7 +131,8 @@ def search_progress(request):
     act = request.GET.get('act', '')
     args = request.GET.get('args', '')
     if uuid == '':
-        return _response('none', '', '')
+        return _response('none')
+
     if uuid not in search_dict.keys():
         search_dict[uuid] = Search(uuid)
 
@@ -162,7 +158,14 @@ def search_progress(request):
     if act == 'result' or sr.tag != len(sr.result):
         result_json = json.dumps(sr.result, cls=DateEncoder)
         sr.tag = len(sr.result)
-    return _response(sr.state, len(sr.result), result_json)
+
+    p_i = 0
+    p_n = 0
+    if sr.helper is not None:
+        p_i = sr.helper.search_index
+        p_n = sr.helper.search_total
+
+    return _response(sr.state, len(sr.result), p_i, p_n, result_json)
 
 
 def log(uuid, msg):
