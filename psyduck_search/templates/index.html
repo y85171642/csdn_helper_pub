@@ -103,7 +103,7 @@
 
                     dl += '<dd>\
                     <p class="text-muted">* '+_desc+'</p>\
-                    <p class="text-muted">时间：'+_result[_url]["upload_date"].substring(0,10)+'</p>\
+                    <p class="text-muted">时间：'+_result[_url]["upload_date"]+'</p>\
                     </dd>';
 
                     dl += '</dl>';
@@ -121,12 +121,12 @@
         {
             var keyword = $("#keyword").val();
             var sort_type = $("#sort_type").val();
-            var source_type = $("#source_type").val();
-            if(keyword == '' || sort_type == '' || source_type == '')
+            var search_deep = $("#search_deep").val();
+            if(keyword == '' || sort_type == '' || search_deep == '')
                 return;
 
             var split = '_%split%_'
-            search_act('begin', keyword + split + sort_type + split + source_type);
+            search_act('begin', keyword + split + sort_type + split + search_deep);
         }
 
         function search_clear()
@@ -200,19 +200,17 @@
             </span>
     </div>
     <div class="form-group form-inline">
-        <select data-placeholder="资源类型" name="carOwner" id="source_type"
+        <select data-placeholder="搜索深度" name="carOwner" id="search_deep"
                 class="form-control chosen-select form-group" tabindex="2" required>
-            <option value="10">全部类型</option>
-            <option value="1">文档类</option>
-            <option value="3">工具类</option>
-            <option value="2">代码类</option>
-            <option value="4">其他</option>
+            <option value="5">搜索深度(低)</option>
+            <option value="10">搜索深度(中)</option>
+            <option value="20">搜索深度(高)</option>
+            <option value="40">搜索深度(极高)</option>
         </select>
         <select data-placeholder="排序类型" name="carOwner" id="sort_type"
                 class="form-control chosen-select form-group" tabindex="3" required>
-            <option value="0">最新上传</option>
-            <option value="1">最多下载</option>
-            <option value="2">默认排序</option>
+            <option value="0">默认排序</option>
+            <option value="1">最新上传</option>
         </select>
         <button type="button" class="btn btn-danger form-group" onclick="search_clear()"> 清空结果</button>
     </div>
