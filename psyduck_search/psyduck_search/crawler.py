@@ -38,20 +38,27 @@ class Crawler:
         return urls
 
     def get_url(self, url):
+        req = None
         try:
             req = self.session.get(url)
-            return req
+            encodings = requests.utils.get_encodings_from_content(req.text)
+            if encodings:
+                encoding = encodings[0]
+            else:
+                encoding = req.apparent_encoding
+            content = req.content.decode(encoding, 'replace')
+            return content
         except:
             return None
+        finally:
+            if req is not None:
+                req.close()
 
     def get_info(self, url):
-        req = self.get_url(url)
-        encodings = requests.utils.get_encodings_from_content(req.text)
-        if encodings:
-            encoding = encodings[0]
-        else:
-            encoding = req.apparent_encoding
-        content = req.content.decode(encoding, 'replace')
+        content = self.get_url(url)
+        if content is None:
+            return None
+
         st_tag = content.find('<div class="download_top_wrap clearfix">')
         if st_tag == -1:
             return None
@@ -104,12 +111,11 @@ class Crawler:
                 '&rqlang=cn&rsv_enter=1&rsv_dl=tb&rsv_sug3=1&rsv_sug1=1&rsv_sug7=100&rsv_sug2=0&inputT=14' \
                 '&rsv_sug4=735&rsv_sug=2'
 
-        req = self.get_url(_url)
-        if req is None:
+        content = self.get_url(_url)
+        if content is None:
             self.total -= 10
             return
 
-        content = req.content.decode('utf-8')
         content = self.simplify_html(content)
         _urls = self.get_all_cache_urls(content)
         self.total -= 10

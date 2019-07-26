@@ -32,7 +32,7 @@ class Search:
 
     def __finish_callback(self):
         cost = '%.2f' % (time.process_time() - self.start_time)
-        log(self.uuid, f'搜索【{self.keyword}】完成，耗时：{cost}秒')
+        log(self.uuid, f'搜索【{self.keyword}】完成，共{len(self.result)}条结果，耗时：{cost}秒')
         self.current = 0
         self.total = 0
         self.keyword = ''
@@ -85,7 +85,7 @@ def search_progress(request):
                 sr.search(keyword, search_deep)
                 sr.sort_type = sort_type
         elif act == 'clear':
-            log(uuid, 'clear result')
+            log(uuid, '清空结果')
             sr.result = {}
 
         result_json = ''
@@ -105,4 +105,4 @@ def search_progress(request):
 def log(uuid, msg):
     import datetime
     now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
-    print('[{}]：{} 于 ({})'.format(uuid[0:4], msg, now_time))
+    print('[{}]：{} 于 ({})'.format(uuid[0:6], msg, now_time))
