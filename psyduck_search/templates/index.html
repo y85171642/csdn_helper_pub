@@ -91,11 +91,13 @@
             {
                 var _html = "";
                 var _result = JSON.parse(result_json);
+                var _rank = 1;
                 for(var _url in _result)
                 {
                     var dl = '<dl class="form-inline form-group">';
 
-                    dl += '<dt><a href="'+_url+'" target="_blank" style="font-size:18px"><b>'+_result[_url]["title"]+'</b></a></dt>';
+                    dl += '<dt><a href="'+_url+'" target="_blank" style="font-size:18px"><b>';
+                    dl += _rank + '. '+ _result[_url]["title"]+'</b></a></dt>';
 
                     var _desc = _result[_url]["description"];
                     if(_desc.length > 100)
@@ -109,6 +111,7 @@
                     dl += '</dl>';
                     dl += '<hr>';
                     _html += dl;
+                    _rank += 1;
                 }
 
                 $("#p").html(_html);
@@ -202,10 +205,9 @@
     <div class="form-group form-inline">
         <select data-placeholder="搜索深度" name="carOwner" id="search_deep"
                 class="form-control chosen-select form-group" tabindex="2" required>
-            <option value="5">搜索深度(低)</option>
-            <option value="10">搜索深度(中)</option>
-            <option value="20">搜索深度(高)</option>
-            <option value="40">搜索深度(极高)</option>
+            <option value="20">搜索深度(低)</option>
+            <option value="40">搜索深度(中)</option>
+            <option value="60">搜索深度(高)</option>
         </select>
         <select data-placeholder="排序类型" name="carOwner" id="sort_type"
                 class="form-control chosen-select form-group" tabindex="3" required>

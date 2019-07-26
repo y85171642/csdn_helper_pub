@@ -18,4 +18,5 @@ def main():
 
 
 if __name__ == '__main__':
+    os.environ["PYDEVD_USE_FRAME_EVAL"] = "NO"
     main()
