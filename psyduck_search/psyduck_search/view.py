@@ -31,7 +31,7 @@ class Search:
             self.result[info['url']] = info
 
     def __finish_callback(self):
-        cost = '%.2f' % (time.process_time() - self.start_time)
+        cost = '%.2f' % (time.time() - self.start_time)
         log(self.uuid, f'搜索【{self.keyword}】完成，共{len(self.result)}条结果，耗时：{cost}秒')
         self.current = 0
         self.total = 0
@@ -45,7 +45,7 @@ class Search:
             self.crawler.signal_stop()
             time.sleep(0.1)
         log(self.uuid, f'开始搜索【{keyword}】，搜索深度：{pages}页')
-        self.start_time = time.process_time()
+        self.start_time = time.time()
         self.keyword = keyword
         self.search_deep = pages
         self.crawler.search_pages = pages
