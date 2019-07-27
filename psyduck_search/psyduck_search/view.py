@@ -66,40 +66,37 @@ def search(request):
 
 
 def search_progress(request):
-    try:
-        uuid = request.GET.get('murmur', '')
-        act = request.GET.get('act', '')
-        args = request.GET.get('args', '')
-        if uuid == '':
-            return _response('none')
+    uuid = request.GET.get('murmur', '')
+    act = request.GET.get('act', '')
+    args = request.GET.get('args', '')
+    if uuid == '':
+        return _response('none')
 
-        if uuid not in search_dict.keys():
-            search_dict[uuid] = Search(uuid)
+    if uuid not in search_dict.keys():
+        search_dict[uuid] = Search(uuid)
 
-        sr: Search = search_dict[uuid]
-        if act == 'begin':
-            keyword = args.split('_%split%_')[0]
-            sort_type = int(args.split('_%split%_')[1])
-            search_deep = int(args.split('_%split%_')[2])
-            if sr.keyword != keyword or sr.search_deep != search_deep:
-                sr.search(keyword, search_deep)
-                sr.sort_type = sort_type
-        elif act == 'clear':
-            log(uuid, '清空结果')
-            sr.result = {}
+    sr: Search = search_dict[uuid]
+    if act == 'begin':
+        keyword = args.split('_%split%_')[0]
+        sort_type = int(args.split('_%split%_')[1])
+        search_deep = int(args.split('_%split%_')[2])
+        if sr.keyword != keyword or sr.search_deep != search_deep:
+            sr.search(keyword, search_deep)
+            sr.sort_type = sort_type
+    elif act == 'clear':
+        log(uuid, '清空结果')
+        sr.result = {}
 
-        result_json = ''
-        if act == 'result' or sr.out_tag != len(sr.result):
-            result_json = json.dumps(sr.result)
-            sr.out_tag = len(sr.result)
+    result_json = ''
+    if act == 'result' or sr.out_tag != len(sr.result):
+        result_json = json.dumps(sr.result)
+        sr.out_tag = len(sr.result)
 
-        state = ''
-        if sr.is_running():
-            state = 'search'
+    state = ''
+    if sr.is_running():
+        state = 'search'
 
-        return _response(state, len(sr.result), sr.current, sr.total, result_json)
-    except ConnectionResetError:
-        pass
+    return _response(state, len(sr.result), sr.current, sr.total, result_json)
 
 
 def log(uuid, msg):
