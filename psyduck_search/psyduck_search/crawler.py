@@ -72,45 +72,73 @@ class Crawler:
         if st_tag == -1:
             return None
 
+        _id = None
         title = None
         description = None
         _url = None
         coin = None
         upload_date = None
+        stars = None
+
         _b = content.find('<h3 title=\'')
         if _b != -1:
             _e = content.find('\'', _b + 11)
-            title = content[_b + 11:_e].strip()
+            if _e != -1:
+                title = content[_b + 11:_e].strip()
 
         _b = content.find('<div class="pre_description">')
         if _b != -1:
             _e = content.find('</div>', _b)
-            description = content[_b + 29:_e].strip()
+            if _e != -1:
+                description = content[_b + 29:_e].strip()
 
         _b = content.find('<base href="')
         if _b != -1:
             _e = content.find('">', _b + 12)
-            _url = content[_b + 12:_e]
+            if _e != -1:
+                _url = content[_b + 12:_e]
         else:
             _b = content.find('<link rel="canonical" href="')
             if _b != -1:
                 _e = content.find('">', _b + 28)
-                _url = content[_b + 28:_e]
+                if _e != -1:
+                    _url = content[_b + 28:_e]
 
-        _e = content.find('</em>积分/C币')
+        _e = content.find('</em>积分')
         if _e != -1:
-            _b = content.rfind('>', 0, _e)
-            coin = int(content[_b + 1:_e])
+            _b = content.rfind('<em>', 0, _e)
+            if _b != -1:
+                _coin_str = ''
+                for c in content[_b + 4:_e]:
+                    if '0' <= c <= '9':
+                        _coin_str += c
+                if _coin_str != '':
+                    coin = int(_coin_str)
 
         _b = content.find('<strong class="size_box">')
         if _b != -1:
             _b = content.find('<span>', _b)
             _e = content.find('上传', _b)
-            upload_date = content[_b + 6:_e].strip()
+            if _b != -1 and _e != -1:
+                upload_date = content[_b + 6:_e].strip()
 
-        if title is None or description is None or _url is None or coin is None or upload_date is None:
+        _b = content.find('<span class="starts">')
+        if _b != -1:
+            _e = content.find('</span>', _b + 20)
+            if _e != -1:
+                _center = content[_b: _e]
+                stars = _center.count('fa fa-star yellow')
+
+        if _url is not None:
+            _b = _url.rfind('/')
+            if _b != -1:
+                _id = _url[_b + 1:]
+
+        if _id is None or title is None or description is None \
+                or _url is None or coin is None or upload_date is None or stars is None:
             return None
-        return {'title': title, 'description': description, 'url': _url, 'coin': coin, 'upload_date': upload_date}
+        return {'id': _id, 'title': title, 'description': '', 'url': _url, 'coin': coin, 'stars': stars,
+                'upload_date': upload_date}
 
     def __get_one_item(self, url):
         if url in self.__cache_urls:
@@ -202,7 +230,7 @@ class Crawler:
 
 def _new_info_callback(info):
     if info['coin'] == 0:
-        print(info['url'])
+        print(info)
     global _total_info_count
     _total_info_count += 1
 
@@ -210,7 +238,7 @@ def _new_info_callback(info):
 def _progress_callback(i, n):
     global _total_result_count
     _total_result_count = n
-    print(f'progress: {i}/{n}')
+    # print(f'progress: {i}/{n}')
 
 
 def _finish_callback():
@@ -229,7 +257,7 @@ def main():
     _program_start_time = time.time()
     c = Crawler()
     c.search_pages = 60
-    c.async_search('Unity', _new_info_callback, _progress_callback, _finish_callback)
+    c.async_search('python', _new_info_callback, _progress_callback, _finish_callback)
 
 
 if __name__ == '__main__':
