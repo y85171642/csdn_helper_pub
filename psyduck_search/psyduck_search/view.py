@@ -84,9 +84,9 @@ def search_progress(request):
 
     sr: Search = search_dict[uuid]
     if act == 'begin':
-        keyword = args.split('_%split%_')[0]
-        sort_type = int(args.split('_%split%_')[1])
-        pages = int(args.split('_%split%_')[2])
+        keyword = args.split('_b_split_e_')[0]
+        sort_type = int(args.split('_b_split_e_')[1])
+        pages = int(args.split('_b_split_e_')[2])
         if sr.keyword != keyword or sr.pages != pages:
             sr.search(keyword, pages)
             sr.sort_type = sort_type
