@@ -19,15 +19,36 @@ class Resource(Model):
     created_date = DateTimeField(null=True)
 
 
+class Log(Model):
+    class Meta:
+        database = db
+
+    uuid = CharField(null=True)
+    keyword = CharField(null=True)
+    pages = CharField(null=True)
+    result = CharField(null=True)
+    cost = CharField(null=True)
+    created_date = DateTimeField(null=True)
+
+
 def check_table():
-    if not db.table_exists("download"):
+    if not db.table_exists("resource"):
         db.create_tables([Resource])
+    if not db.table_exists("log"):
+        db.create_tables([Log])
+
+
+def insert_log(info):
+    check_table()
+    result = Log.create(uuid=info['uuid'], keyword=info['keyword'], pages=info['pages'], result=info['result'],
+                        cost=info['cost'], created_date=datetime.datetime.now())
+    return result
 
 
 def insert_download(info):
     check_table()
-    result = Resource.create(id=info['id'], url=info['url'], title=info['title'], type=info['type'],
-                             stars=info['stars'], description=info['description'], upload_date=info['upload_date'],
+    result = Resource.create(id=info['id'], url=info['url'], title=info['title'], stars=info['stars'],
+                             description=info['description'], upload_date=info['upload_date'],
                              created_date=datetime.datetime.now())
     return result
 
@@ -41,7 +62,7 @@ def exist_download(_id):
     return get_download(_id) is not None
 
 
-def find_all(keyword, start_index=0, count=10):
+def find_download(keyword='', start_index=0, count=10):
     check_table()
     if keyword == '':
         return Resource.select().order_by(-Resource.created_date).offset(start_index).limit(count)
@@ -49,9 +70,8 @@ def find_all(keyword, start_index=0, count=10):
         start_index).limit(count)
 
 
-def count_all(keyword):
+def count_download(keyword=''):
     check_table()
     if keyword == '':
         return Resource.select().count()
     return Resource.select().where(Resource.title.contains(keyword)).count()
-

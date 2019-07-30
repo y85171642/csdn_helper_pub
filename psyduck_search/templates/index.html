@@ -12,6 +12,7 @@
         var state = '';
         var murmur = '';
         var result_count = 0;
+        var total_count = 0;
         var result_json = '';
         var progress_i = 0;
         var progress_n = 0;
@@ -94,16 +95,20 @@
                 var _rank = 1;
                 for(var _url in _result)
                 {
-                    var dl = '<dl class="form-inline form-group">';
-
-                    dl += '<dt><a href="'+_url+'" target="_blank" style="font-size:18px"><b>';
-                    dl += _rank + '. '+ _result[_url]["title"]+'</b></a></dt>';
-
+                    var stars_array = ["☆☆☆☆☆","★☆☆☆☆","★★☆☆☆","★★★☆☆","★★★★☆","★★★★★"];
+                    var _star = stars_array[_result[_url]["stars"]];
                     var _desc = _result[_url]["description"];
+                    var _title = _result[_url]["title"];
+                    var _date = _result[_url]["upload_date"];
+
+                    var dl = '<dl class="form-inline form-group">';
+                    dl += '<dt><a href="'+_url+'" target="_blank" style="font-size:18px"><b>';
+                    dl += _rank + '. '+ _title +'</b></a></dt>';
 
                     dl += '<dd>\
                     <p class="text-muted">* '+_desc+'</p>\
-                    <p class="text-muted">时间：'+_result[_url]["upload_date"]+'</p>\
+                    <p class="text-muted">时间：'+_date+'　　\
+                    评分：<span style="font-size:20px;height:16px;">'+_star+'</span></p>\
                     </dd>';
 
                     dl += '</dl>';
@@ -113,6 +118,7 @@
                 }
 
                 $("#p").html(_html);
+                $("#total_count").html('累计为用户搜索到 '+total_count+' 个免费资源')
 
                 _last_result_count = result_count;
             }
@@ -165,6 +171,7 @@
                 dataType: 'json',
                 success: function(res) {
                     state = res.state;
+                    total_count = res.total_count;
                     result_count = res.result_count;
                     progress_i = res.p_i;
                     progress_n = res.p_n;
@@ -190,7 +197,7 @@
 <div class="container" style="width:88%;">
     <div class="text-center">
         <h2 class="text-muted"><b> CSDN 0积分资源搜索</b></h2>
-        <label id="recoder" class="label label-warning" style="font-size:14px;">累计为用户搜索到 1402 个免费资源</label>
+        <label id="total_count" class="label label-primary" style="font-size:14px;"></label>
         <p class="text-primary" id="cost"></p>
     </div>
     <div class="input-group form-group">
@@ -224,7 +231,7 @@
     <div id="p"></div>
     <div class="row" style="height:120px;"></div>
 </div>
-<footer class="text-center navbar-fixed-bottom" style="background:linear-gradient(#ffffff00,#ffffffff);">
+<footer class="text-center navbar-fixed-bottom" style="background:linear-gradient(#ffffff00,#ffffffcc,#ffffffff);">
     <p class="text-muted">
         免责声明：<br>
         有关资源均来自网络收集与网友提供，任何涉及商业盈利目的的均不得使用，否则产生的一切后果将由您自己承担！<br>

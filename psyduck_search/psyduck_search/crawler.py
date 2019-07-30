@@ -137,7 +137,7 @@ class Crawler:
         if _id is None or title is None or description is None \
                 or _url is None or coin is None or upload_date is None or stars is None:
             return None
-        return {'id': _id, 'title': title, 'description': '', 'url': _url, 'coin': coin, 'stars': stars,
+        return {'id': _id, 'title': title, 'description': description, 'url': _url, 'coin': coin, 'stars': stars,
                 'upload_date': upload_date}
 
     def __get_one_item(self, url):
