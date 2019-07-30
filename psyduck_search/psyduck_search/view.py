@@ -3,6 +3,7 @@ from psyduck_search.crawler import Crawler
 from django.http import HttpResponse
 import json
 import time
+from psyduck_search import db_helper
 
 
 class Search:
@@ -14,7 +15,7 @@ class Search:
     keyword = ''
     uuid = ''
     sort_type = 0
-    search_deep = 0
+    pages = 0
     start_time = None
 
     def __init__(self, uuid):
@@ -29,12 +30,17 @@ class Search:
     def __new_info_callback(self, info):
         if info['coin'] == 0 and info['url'] not in self.result.keys():
             self.result[info['url']] = info
+            if not db_helper.exist_download(info['id']):
+                db_helper.insert_download(info)
 
     def __finish_callback(self):
         cost = '%.2f' % (time.time() - self.start_time)
         log(self.uuid, f'搜索【{self.keyword}】完成，共{len(self.result)}条结果，耗时：{cost}秒')
+        db_helper.insert_log(
+            {'uuid': self.uuid, 'keyword': self.keyword, 'pages': self.pages, 'result': len(self.result), 'cost': cost})
         self.current = 0
         self.total = 0
+        self.pages = 0
         self.keyword = ''
 
     def is_running(self):
@@ -47,7 +53,7 @@ class Search:
         log(self.uuid, f'开始搜索【{keyword}】，搜索深度：{pages}页')
         self.start_time = time.time()
         self.keyword = keyword
-        self.search_deep = pages
+        self.pages = pages
         self.crawler.search_pages = pages
         self.crawler.async_search(keyword, self.__new_info_callback, self.__progress_callback, self.__finish_callback)
 
@@ -57,7 +63,8 @@ search_dict: {str, Search} = {}
 
 def _response(state, result_count=0, p_i=0, p_n=0, result_json=''):
     return HttpResponse(
-        json.dumps({'state': state, 'result_count': result_count, 'p_i': p_i, 'p_n': p_n, 'result_json': result_json}),
+        json.dumps({'state': state, 'result_count': result_count, 'total_count': db_helper.count_download(),
+                    'p_i': p_i, 'p_n': p_n, 'result_json': result_json}),
         content_type='application/json')
 
 
@@ -77,11 +84,11 @@ def search_progress(request):
 
     sr: Search = search_dict[uuid]
     if act == 'begin':
-        keyword = args.split('_%split%_')[0]
-        sort_type = int(args.split('_%split%_')[1])
-        search_deep = int(args.split('_%split%_')[2])
-        if sr.keyword != keyword or sr.search_deep != search_deep:
-            sr.search(keyword, search_deep)
+        keyword = args.split('_b_split_e_')[0]
+        sort_type = int(args.split('_b_split_e_')[1])
+        pages = int(args.split('_b_split_e_')[2])
+        if sr.keyword != keyword or sr.pages != pages:
+            sr.search(keyword, pages)
             sr.sort_type = sort_type
     elif act == 'clear':
         log(uuid, '清空结果')
