@@ -78,7 +78,7 @@ def search_progress(request):
     uuid = request.POST.get('murmur', '')
     act = request.POST.get('act', '')
     keyword = request.POST.get('keyword', '')
-    pages = request.POST.get('pages', 0)
+    pages = int(request.POST.get('pages', ''), 0)
     if uuid == '':
         return _response('none')
 

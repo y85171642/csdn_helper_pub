@@ -161,12 +161,12 @@
             search_act();
         }
 
-        function search_act(act='', keyword='', pages=0)
+        function search_act(act='', keyword='', pages='')
         {
             $.ajax({
                 type: 'POST',
                 url: 'search_progress',
-                data: JSON.stringify({'murmur':murmur,'act':act,'keyword':keyword,'pages':pages}),
+                data: {'murmur':murmur,'act':act,'keyword':keyword,'pages':pages},
                 dataType: 'json',
                 success: function(res) {
                     state = res.state;
