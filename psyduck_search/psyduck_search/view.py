@@ -14,7 +14,6 @@ class Search:
     total = 0
     keyword = ''
     uuid = ''
-    sort_type = 0
     pages = 0
     start_time = None
 
@@ -73,9 +72,13 @@ def search(request):
 
 
 def search_progress(request):
-    uuid = request.GET.get('murmur', '')
-    act = request.GET.get('act', '')
-    args = request.GET.get('args', '')
+    if request.method == 'GET':
+        return HttpResponse()
+
+    uuid = request.POST.get('murmur', '')
+    act = request.POST.get('act', '')
+    keyword = request.POST.get('keyword', '')
+    pages = request.POST.get('pages', 0)
     if uuid == '':
         return _response('none')
 
@@ -84,12 +87,8 @@ def search_progress(request):
 
     sr: Search = search_dict[uuid]
     if act == 'begin':
-        keyword = args.split('_b_split_e_')[0]
-        sort_type = int(args.split('_b_split_e_')[1])
-        pages = int(args.split('_b_split_e_')[2])
         if sr.keyword != keyword or sr.pages != pages:
             sr.search(keyword, pages)
-            sr.sort_type = sort_type
     elif act == 'clear':
         log(uuid, '清空结果')
         sr.result = {}

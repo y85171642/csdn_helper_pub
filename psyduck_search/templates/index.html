@@ -43,6 +43,8 @@
         var _dot_index = 0;
         function refresh_html()
         {
+            $("#total_count").html('累计为用户搜索到 '+total_count+' 个免费资源')
+
             if(state == '')
             {
                 if(result_count == 0)
@@ -88,10 +90,10 @@
                 ');
             }
 
-            if(_last_result_count != result_count && result_json != '')
+            if(_last_result_count != result_count)
             {
                 var _html = "";
-                var _result = JSON.parse(result_json);
+                var _result = result_json == ""?{}:JSON.parse(result_json);
                 var _rank = 1;
                 for(var _url in _result)
                 {
@@ -118,8 +120,6 @@
                 }
 
                 $("#p").html(_html);
-                $("#total_count").html('累计为用户搜索到 '+total_count+' 个免费资源')
-
                 _last_result_count = result_count;
             }
         }
@@ -127,13 +127,11 @@
         function search_begin()
         {
             var keyword = $("#keyword").val();
-            var sort_type = $("#sort_type").val();
             var search_deep = $("#search_deep").val();
-            if(keyword == '' || sort_type == '' || search_deep == '')
+            if(keyword == '' || search_deep == '')
                 return;
 
-            var split = '_b_split_e_'
-            search_act('begin', keyword + split + sort_type + split + search_deep);
+            search_act('begin', keyword , search_deep);
         }
 
         function search_clear()
@@ -163,11 +161,12 @@
             search_act();
         }
 
-        function search_act(act='', args='')
+        function search_act(act='', keyword='', pages=0)
         {
             $.ajax({
-                type: 'get',
-                url: 'search_progress?murmur=' + murmur + (act==''?'':'&act='+act) + (args==''?'':'&args='+args),
+                type: 'POST',
+                url: 'search_progress',
+                data: JSON.stringify({'murmur':murmur,'act':act,'keyword':keyword,'pages':pages}),
                 dataType: 'json',
                 success: function(res) {
                     state = res.state;
