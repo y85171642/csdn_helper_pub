@@ -105,6 +105,7 @@ async def handle_msg_group(context):
         msg += source_code_tail()
         msg += donate_tail()
         msg += export_tail()
+        msg += search_tail()
         last_cmd = cmd
         await bot.send(context, msg)
 
@@ -191,6 +192,7 @@ async def handle_msg_group(context):
             msg += source_code_tail()
             msg += donate_tail()
             msg += export_tail()
+            msg += search_tail()
             await bot.send(context, msg)
 
     download_id = find_csdn_download_id(context['message'])
@@ -204,6 +206,8 @@ async def handle_msg_group(context):
     if download_url is not None:
         can_download, msg = helper.check_download_limit(qq_num, qq_group)
         if not can_download:
+            msg += sep_l()
+            msg += search_tail()
             await bot.send(context, msg)
             return
 
@@ -243,6 +247,12 @@ def donate_tail():
 def export_tail():
     if config.export_url != '':
         return '\n* 资源导出 %s' % short_url.get(config.export_url)
+    return ''
+
+
+def search_tail():
+    if config.search_url != '':
+        return '\n* 资源搜索 %s' % short_url.get(config.search_url)
     return ''
 
 
