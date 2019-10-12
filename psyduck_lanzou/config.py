@@ -36,6 +36,6 @@ conf.read(cfg_path, encoding="utf-8")
 
 zip_save_path = frozen_path(get_cfg('zip_save_path'))
 sqlite_db_path = frozen_path(get_cfg('sqlite_db_path'))
-lanzou_username = frozen_path(get_cfg('lanzou_username'))
-lanzou_password = frozen_path(get_cfg('lanzou_password'))
+lanzou_username = get_cfg('lanzou_username')
+lanzou_password = get_cfg('lanzou_password')
 
