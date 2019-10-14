@@ -393,6 +393,9 @@ def __get_file_name_in_zip_file(_id):
 
 
 def __already_download(_id):
+    import db_helper
+    if db_helper.exist_download(_id) and db_helper.get_download(_id).download_url is not None:
+        return True
     zip_path = os.path.join(zip_save_path, "{0}.zip".format(_id))
     if os.path.exists(zip_path):
         file_name = __get_file_name_in_zip_file(_id)
