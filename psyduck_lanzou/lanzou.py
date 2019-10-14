@@ -12,9 +12,9 @@ lzy = lanzou_api.LanZouCloud()
 
 
 def auto_sync_loop():
+    folder_id = lzy.list_dir()['folder_list'][folder_name]
+    cloud_files = lzy.list_dir(folder_id)['file_list']
     while True:
-        folder_id = lzy.list_dir()['folder_list'][folder_name]
-        cloud_files = lzy.list_dir(folder_id)['file_list']
         local_files = os.listdir(config.zip_save_path)
         for lf in local_files:
             f_path = os.path.join(config.zip_save_path, lf)
@@ -28,17 +28,20 @@ def auto_sync_loop():
             if lf_size > 99 * 1024 * 1024:
                 continue
             if lf not in cloud_files and db_helper.exist_download(f_id):
-                print(f'开始上传文件【{lf}】 ({f_size}B)...')
+                print(f'开始上传文件[{lf}]({f_size}b)...')
                 result = lzy.upload2(f_path, folder_id)
                 db_helper.set_download_url(f_id, result['share_url'])
                 os.remove(f_path)
+                cloud_files[lf] = result['file_id']
                 print("上传完成！")
                 break
-        time.sleep(10)
+        time.sleep(2)
 
 
 def login():
     print('登录蓝奏...')
+    global lzy
+    lzy = lanzou_api.LanZouCloud()
     lzy.login(username, password)
 
 
