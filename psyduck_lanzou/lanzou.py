@@ -24,18 +24,39 @@ def auto_sync_loop():
             if time.time() - os.path.getmtime(f_path) < 600:
                 continue
             # 文件大小超过 99MB 时不上传
-            lf_size = os.path.getsize(f_path)
-            if lf_size > 99 * 1024 * 1024:
-                continue
+            # lf_size = os.path.getsize(f_path)
+            # if lf_size > 99 * 1024 * 1024:
+            #    continue
             if lf not in cloud_files and db_helper.exist_download(f_id):
                 print(f'开始上传文件[{lf}]({f_size}b)...')
                 result = lzy.upload2(f_path, folder_id)
                 db_helper.set_download_url(f_id, result['share_url'])
                 os.remove(f_path)
+                d = db_helper.get_download(f_id)
+                desc = d.title + "\n" + d.description
+                if len(desc) > 159:
+                    desc = desc[0:156] + "..."
+                lzy.modify_description(result['file_id'], desc)
                 cloud_files[lf] = result['file_id']
                 print("上传完成！")
                 break
         time.sleep(2)
+
+
+def set_all_desc():
+    folder_id = lzy.list_dir()['folder_list'][folder_name]
+    cloud_files = lzy.list_dir(folder_id)['file_list']
+    for (cf_name, cf_id) in cloud_files.items():
+        db_id = cf_name[:-4]
+        if not db_helper.exist_download(db_id):
+            continue
+        d = db_helper.get_download(db_id)
+        desc = d.title + "\n" + d.description
+        if len(desc) > 159:
+            desc = desc[0:156] + "..."
+        suc = lzy.modify_description(cf_id, desc)
+        print(f'设置{db_id}描述结果：{suc}')
+    print('所有文件描述设置完毕')
 
 
 def login():
@@ -49,6 +70,7 @@ def main_loop():
     while True:
         login()
         try:
+            # set_all_desc()
             auto_sync_loop()
         except:
             import traceback

@@ -70,6 +70,30 @@ class LanZouCloud(object):
         if '登录成功' not in html:
             raise PasswdError("用户名或登录密码错误")
 
+    def modify_description(self, id, description):
+        """
+        设置文件描述信息
+        :param id: 文件或文件夹Id
+        :param description: 描述内容
+        :return: True or false
+        """
+
+        post_data = {
+            "task": 11,
+            "file_id": id,
+            "desc": description,
+        }
+
+        try:
+            result = self._session.post('https://pc.woozooo.com/doupload.php', data=post_data,
+                                        headers=self.header_pc).json()
+        except Exception:
+            return False
+        if result['zt'] != 1:
+            return False
+        else:
+            return True
+
     def delete(self, id):
         """
         把网盘的文件(夹)放到回收站(不能包含子文件夹)
@@ -383,11 +407,20 @@ class LanZouCloud(object):
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
 
+            merge_bat = 'copy /b '
+            del_bat = ''
             for i in range(1, count + 1):
-                name = temp_dir + os.sep + file_name.replace('.' + str(suffix), '[{}].{}'.format(i, suffix))
-                f = open(name, 'wb')
+                f_name = file_name.replace('.' + str(suffix), '[{}].{}'.format(i, suffix))
+                f_path = temp_dir + os.sep + f_name
+                f = open(f_path, 'wb')
                 f.write(fp.read(block_size))
+                merge_bat = merge_bat + f_name + '+'
+                del_bat = del_bat + '\ndel ' + f_name
             fp.close()
+            merge_bat = merge_bat[:-1] + ' ' + file_name
+            mb = open(os.path.join(temp_dir, 'combine.bat'), 'w')
+            mb.write(merge_bat + del_bat)
+            mb.close()
             return temp_dir
 
     def _merge_file(self, split_dir):
@@ -421,7 +454,8 @@ class LanZouCloud(object):
             return self.upload(temp_dir, folder_id)
         elif os.path.isdir(temp_dir):
             result_list = []
-            temp_folder_id = self.mkdir(folder_id, os.path.basename(file_path), '分段文件，请勿直接下载')
+            warn = '分段文件，请勿直接使用！！！\n请将所有文件下载到同一目录下，运行combine.bat，进行合并后使用。'
+            temp_folder_id = self.mkdir(folder_id, os.path.basename(file_path), warn)
             for file in sorted(os.listdir(temp_dir)):
                 up_file = temp_dir + os.sep + file
                 r = self.upload(up_file, temp_folder_id)
