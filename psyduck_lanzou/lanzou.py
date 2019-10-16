@@ -48,9 +48,13 @@ def auto_sync_loop():
 
 def set_all_desc():
     folder_id = lzy.list_dir()['folder_list'][folder_name]
+    print('拉取文件列表...')
     cloud_files = lzy.list_dir(folder_id)['file_list']
+    print('拉取文件列表完成。')
+    i = 0
     for (cf_name, cf_id) in cloud_files.items():
         db_id = cf_name[:-4]
+        i = i + 1
         if not db_helper.exist_download(db_id):
             continue
         d = db_helper.get_download(db_id)
@@ -58,7 +62,7 @@ def set_all_desc():
         if len(desc) > 159:
             desc = desc[0:156] + "..."
         suc = lzy.modify_description(cf_id, desc)
-        print(f'设置{db_id}描述结果：{suc}')
+        print(f'[{i}/{len(cloud_files)}]设置{db_id}描述结果：{suc}')
     print('所有文件描述设置完毕')
 
 

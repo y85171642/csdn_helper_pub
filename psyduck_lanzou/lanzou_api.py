@@ -383,7 +383,7 @@ class LanZouCloud(object):
         # 处理上传返回的结果
         if result["zt"] == 0:
             print('上传文件"{}"时发生错误: {}'.format(file_path, result["info"]))
-            if retry == 0:
+            if retry == 1:
                 raise UploadError('上传文件"{}"时发生错误: {}'.format(file_path, result["info"]))
             elif retry == -1:
                 print(f"上传重试({3})...")
@@ -421,7 +421,7 @@ class LanZouCloud(object):
             merge_bat = '@echo off\ncopy /b '
             del_bat = ''
             for i in range(1, count + 1):
-                f_name = file_name.replace('.' + str(suffix), '[{}].{}'.format(i, suffix))
+                f_name = file_name.replace('.' + str(suffix), '.part{}.{}'.format(i, suffix))
                 f_path = temp_dir + os.sep + f_name
                 f = open(f_path, 'wb')
                 f.write(fp.read(block_size))
