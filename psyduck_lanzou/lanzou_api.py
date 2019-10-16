@@ -350,7 +350,7 @@ class LanZouCloud(object):
         else:  # 返回文件夹分享链接
             return 'https://www.lanzous.com/b{}/'.format(id)
 
-    def upload(self, file_path, folder_id=-1, desc='') -> dict:
+    def upload(self, file_path, folder_id=-1, desc='', retry=-1) -> dict:
         """
         上传文件到蓝奏云上指定的文件夹(默认根目录)
         :param file_path: 本地文件地址
@@ -382,7 +382,15 @@ class LanZouCloud(object):
         result = self._session.post('http://pc.woozooo.com/fileup.php', data=post_data, headers=upfile_header).json()
         # 处理上传返回的结果
         if result["zt"] == 0:
-            raise UploadError('上传文件"{}"时发生错误: {}'.format(file_path, result["info"]))
+            print('上传文件"{}"时发生错误: {}'.format(file_path, result["info"]))
+            if retry == 0:
+                raise UploadError('上传文件"{}"时发生错误: {}'.format(file_path, result["info"]))
+            elif retry == -1:
+                print(f"上传重试({3})...")
+                return self.upload(file_path, folder_id, desc, 3)
+            else:
+                print(f"上传重试({retry - 1})...")
+                return self.upload(file_path, folder_id, desc, retry - 1)
         file_id = result["text"][0]["id"]
         short_url = result["text"][0]["f_id"]
         file_name = result["text"][0]["name_all"]
