@@ -452,7 +452,7 @@ class LanZouCloud(object):
         :param desc: 文件描述信息
         :return: dict 单个文件的信息(小文件)，或者种子文件的信息(大文件)
         """
-        max_size = 104857600  # 蓝奏云100MB限制
+        max_size = 1024 * 1024 * 99  # 蓝奏云100MB限制
         temp_dir = self._split_file(file_path, max_size)
         if os.path.isfile(temp_dir):
             return self.upload(temp_dir, folder_id)
