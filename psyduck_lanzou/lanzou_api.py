@@ -79,6 +79,18 @@ class LanZouCloud(object):
 
     def relogin(self):
         print('重新登录')
+        self._session.get('https://up.woozooo.com/account.php?action=logout')
+        self._session = requests.session()
+        self.header_pc = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
+            'Referer': 'https://www.lanzous.com',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+        }
+        self.header_phone = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Mobile Safari/537.36',
+            'Referer': 'https://www.lanzous.com',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+        }
         self.login(self.g_username, self.g_passwd)
 
     def modify_description(self, id, description):
@@ -477,6 +489,7 @@ class LanZouCloud(object):
         if os.path.isfile(temp_dir):
             return self.upload(temp_dir, folder_id)
         elif os.path.isdir(temp_dir):
+            self.relogin()
             warn = '分段文件，请合并后使用。请将文件夹下所有文件下载到同一目录下，运行【combine.bat】合并后使用。'
             temp_folder_id = self.mkdir(folder_id, os.path.basename(file_path), warn)
             self.remove_folder_password(temp_folder_id)
