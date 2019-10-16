@@ -452,7 +452,7 @@ class LanZouCloud(object):
         :param desc: 文件描述信息
         :return: dict 单个文件的信息(小文件)，或者种子文件的信息(大文件)
         """
-        max_size = 1024 * 1024 * 99  # 蓝奏云100MB限制
+        max_size = 1024 * 1024 * 100  # 蓝奏云100MB限制
         temp_dir = self._split_file(file_path, max_size)
         if os.path.isfile(temp_dir):
             return self.upload(temp_dir, folder_id)
@@ -465,9 +465,14 @@ class LanZouCloud(object):
             desc = '[分段文件，请勿直接使用]\n' + desc
             if len(desc) > 159:
                 desc = desc[0:156] + "..."
+            i = 1
+            import time
             for file in sorted(os.listdir(temp_dir)):
                 up_file = temp_dir + os.sep + file
+                print(f'分段上传[{i}/{len(os.listdir(temp_dir))}]...')
                 self.upload(up_file, temp_folder_id, desc)
+                i += 1
+                time.sleep(1)
             from shutil import rmtree
             rmtree(temp_dir)
             return folder_info

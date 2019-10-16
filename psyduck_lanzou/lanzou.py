@@ -13,7 +13,11 @@ lzy = lanzou_api.LanZouCloud()
 
 def auto_sync_loop():
     folder_id = lzy.list_dir()['folder_list'][folder_name]
-    cloud_files = lzy.list_dir(folder_id)['file_list']
+    print('拉取文件列表...')
+    list_dir = lzy.list_dir(folder_id)
+    cloud_files = list_dir['file_list']
+    cloud_files.update(list_dir['folder_list'])
+    print('拉取文件列表完成。')
     while True:
         local_files = os.listdir(config.zip_save_path)
         for lf in local_files:
