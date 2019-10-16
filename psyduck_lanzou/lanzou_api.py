@@ -487,7 +487,7 @@ class LanZouCloud(object):
         max_size = 1024 * 1024 * 100  # 蓝奏云100MB限制
         temp_dir = self._split_file(file_path, max_size)
         if os.path.isfile(temp_dir):
-            return self.upload(temp_dir, folder_id)
+            return self.upload(temp_dir, folder_id, desc)
         elif os.path.isdir(temp_dir):
             self.relogin()
             warn = '分段文件，请合并后使用。请将文件夹下所有文件下载到同一目录下，运行【combine.bat】合并后使用。'
