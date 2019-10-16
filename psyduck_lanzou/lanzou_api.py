@@ -54,8 +54,15 @@ class LanZouCloud(object):
             'Accept-Language': 'zh-CN,zh;q=0.9',
         }
 
+    g_username = ''
+    g_passwd = ''
+
     def login(self, username, passwd):
         """登录蓝奏云控制台"""
+
+        self.g_username = username
+        self.g_passwd = passwd
+
         login_data = {
             "action": "login",
             "task": "login",
@@ -69,6 +76,10 @@ class LanZouCloud(object):
                                   headers=self.header_phone).text  # 登录
         if '登录成功' not in html:
             raise PasswdError("用户名或登录密码错误")
+
+    def relogin(self):
+        print('重新登录')
+        self.login(self.g_username, self.g_passwd)
 
     def modify_description(self, id, description):
         """
@@ -358,6 +369,7 @@ class LanZouCloud(object):
         :param desc: 文件描述信息
         :return: 包含文件名、文件ID、分享链接的dict
         """
+        self.relogin()
         file_name = os.path.basename(file_path)  # 从文件路径截取文件名
         suffix = file_name.split(".")[-1]
         vaild_suffix_list = ['doc', 'docx', 'zip', 'rar', 'apk', 'ipa', 'txt', 'exe', '7z', 'e', 'z', 'ct',
