@@ -29,14 +29,13 @@ def auto_sync_loop():
             #    continue
             if lf not in cloud_files and db_helper.exist_download(f_id):
                 print(f'开始上传文件[{lf}]({f_size}b)...')
-                result = lzy.upload2(f_path, folder_id)
-                db_helper.set_download_url(f_id, result['share_url'])
-                os.remove(f_path)
                 d = db_helper.get_download(f_id)
                 desc = d.title + "\n" + d.description
                 if len(desc) > 159:
                     desc = desc[0:156] + "..."
-                lzy.modify_description(result['file_id'], desc)
+                result = lzy.upload2(f_path, folder_id, desc)
+                db_helper.set_download_url(f_id, result['share_url'])
+                os.remove(f_path)
                 cloud_files[lf] = result['file_id']
                 print("上传完成！")
                 break

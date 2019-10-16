@@ -350,11 +350,12 @@ class LanZouCloud(object):
         else:  # 返回文件夹分享链接
             return 'https://www.lanzous.com/b{}/'.format(id)
 
-    def upload(self, file_path, folder_id=-1) -> dict:
+    def upload(self, file_path, folder_id=-1, desc='') -> dict:
         """
         上传文件到蓝奏云上指定的文件夹(默认根目录)
         :param file_path: 本地文件地址
         :param folder_id: 蓝奏云目标文件夹的ID
+        :param desc: 文件描述信息
         :return: 包含文件名、文件ID、分享链接的dict
         """
         file_name = os.path.basename(file_path)  # 从文件路径截取文件名
@@ -386,6 +387,8 @@ class LanZouCloud(object):
         short_url = result["text"][0]["f_id"]
         file_name = result["text"][0]["name_all"]
         share_url = 'https://www.lanzous.com/' + short_url
+        if desc != '':
+            self.modify_description(file_id, desc)
         return {'file_name': file_name, 'file_id': file_id, 'share_url': share_url}
 
     def _split_file(self, file_path, block_size):
@@ -407,7 +410,7 @@ class LanZouCloud(object):
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
 
-            merge_bat = 'copy /b '
+            merge_bat = '@echo off\ncopy /b '
             del_bat = ''
             for i in range(1, count + 1):
                 f_name = file_name.replace('.' + str(suffix), '[{}].{}'.format(i, suffix))
@@ -419,7 +422,7 @@ class LanZouCloud(object):
             fp.close()
             merge_bat = merge_bat[:-1] + ' ' + file_name
             mb = open(os.path.join(temp_dir, 'combine.bat'), 'w')
-            mb.write(merge_bat + del_bat)
+            mb.write(merge_bat + del_bat + '\necho 合并完成，按任意键退出...\npause')
             mb.close()
             return temp_dir
 
@@ -441,11 +444,12 @@ class LanZouCloud(object):
         from shutil import rmtree
         rmtree(split_dir)
 
-    def upload2(self, file_path, folder_id=-1) -> dict:
+    def upload2(self, file_path, folder_id=-1, desc='') -> dict:
         """
         强化版upload，大文件自动拆分上传
         :param file_path: 本地文件完整路径
         :param folder_id: 蓝奏云目标文件夹的ID
+        :param desc: 文件描述信息
         :return: dict 单个文件的信息(小文件)，或者种子文件的信息(大文件)
         """
         max_size = 104857600  # 蓝奏云100MB限制
@@ -453,24 +457,66 @@ class LanZouCloud(object):
         if os.path.isfile(temp_dir):
             return self.upload(temp_dir, folder_id)
         elif os.path.isdir(temp_dir):
-            result_list = []
-            warn = '分段文件，请勿直接使用！！！\n请将所有文件下载到同一目录下，运行combine.bat，进行合并后使用。'
+            warn = '分段文件，请合并后使用。请将文件夹下所有文件下载到同一目录下，运行【combine.bat】合并后使用。'
             temp_folder_id = self.mkdir(folder_id, os.path.basename(file_path), warn)
+            self.remove_folder_password(temp_folder_id)
+            folder_info = self.get_folder_info(temp_folder_id)
+            folder_info['file_id'] = temp_folder_id
+            desc = '[分段文件，请勿直接使用]\n' + desc
+            if len(desc) > 159:
+                desc = desc[0:156] + "..."
             for file in sorted(os.listdir(temp_dir)):
                 up_file = temp_dir + os.sep + file
-                r = self.upload(up_file, temp_folder_id)
-                result_list.append(r)
+                self.upload(up_file, temp_folder_id, desc)
             from shutil import rmtree
             rmtree(temp_dir)
-            # 把所有分段文件的信息写入txt文本，然后上传，之后返回的是这个txt的信息
-            # 通过下载这个txt文件（相当于一个种子文件），可以得到所有文件的信息，然后分别下载再合并，得到完整文件
-            save_name = os.path.basename(temp_dir).replace('_split', '.seed.txt')
-            f = open(save_name, 'w')
-            json.dump(result_list, f, ensure_ascii=False, indent=4)
-            f.close()
-            result = self.upload(save_name, folder_id)
-            os.remove(save_name)
-            return result
+            return folder_info
+
+    def get_folder_info(self, folder_id):
+        """
+        设置文件描述信息
+        :param folder_id: 文件夹Id
+        :return: share url
+        """
+
+        post_data = {
+            "task": 18,
+            "folder_id": folder_id,
+        }
+
+        try:
+            result = self._session.post('https://pc.woozooo.com/doupload.php', data=post_data,
+                                        headers=self.header_pc).json()
+        except Exception:
+            return ''
+        if result['zt'] != 1:
+            return ''
+        else:
+            return {'file_name': result['info']['name'], 'share_url': result['info']['new_url']}
+
+    def remove_folder_password(self, folder_id):
+        """
+        设置文件描述信息
+        :param folder_id: 文件夹Id
+        :return: True or false
+        """
+
+        post_data = {
+            "task": 16,
+            "folder_id": folder_id,
+            "shows": 0,
+            "shownames": "1234",
+        }
+
+        try:
+            result = self._session.post('https://pc.woozooo.com/doupload.php', data=post_data,
+                                        headers=self.header_pc).json()
+        except Exception:
+            return False
+        if result['zt'] != 1:
+            return False
+        else:
+            return True
 
     def clean_recycle(self):
         """清空回收站"""
