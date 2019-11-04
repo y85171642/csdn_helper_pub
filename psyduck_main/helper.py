@@ -183,7 +183,7 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
             return __download_result(True, "success", info)
 
         step = 'find download button'
-        btn = find('//div[@class="dl_download_box dl_download_l"]/a[text()="VIP下载"]')
+        btn = find('//a[text()="VIP下载"]')
         vip_channel = True
         step = 'check download channel'
         if btn is None:
@@ -202,13 +202,13 @@ def auto_download(url, qq_num=config.default_qq, qq_name=config.default_qq_name,
         time.sleep(1)
 
         step = 'check max count'
-        if find('//div[@id="download_times"]').get_attribute('style').find('display: block;') != -1:
+        if find('//div[@class="vip_tips"]').text.find('上限') != -1:
             return __download_result(False, 'CSDN今日下载次数已达上限（20），请明日在来下载。')
 
         step = 'find confirm download'
         if vip_channel:
-            if find('//div[@id="vipIgnoreP"]').get_attribute('style').find('display: block;') != -1:
-                find('//div[@id="vipIgnoreP"]//a[@class="dl_btn vip_dl_btn"]').click()
+            if find('//div[@class="alert-box download_box"]') is not None:
+                find('//a[@class="dl_btn do_download vip_dl_btn"]').click()
             else:
                 pass  # 无弹窗情况（自己的资源）
         else:
@@ -322,16 +322,21 @@ def check_download_limit(qq_num, qq_group):
     return True, ""
 
 
+def __trans_type(_url):
+    i = _url.rfind('/')
+    return _url[i + 1:-4]
+
+
 def __get_download_info():
     import datetime
-    coin_el = find('//div[@class="dl_download_box dl_download_l"]/label/em')
+    coin_el = find('//label[@class="required-points"]/em')
     coin = 0 if coin_el is None else int(coin_el.text.strip())
     date_str = find('//strong[@class="size_box"]/span[1]').text.strip()[:10]
     info = {
-        'id': find('//div[@id="download_top"]').get_attribute('data-id'),
-        'title': find('//dl[@class="download_dl"]/dd/h3').get_attribute('title'),
-        'description': find('//div[@class="pre_description"]').text.strip(),
-        'type': find('//dl[@class="download_dl"]/dt/img').get_attribute('title'),
+        'id': driver.execute_script('return source["id"]'),
+        'title': driver.execute_script('return source["title"]'),
+        'description': find('//div[@class="resource_description"]').text.strip(),
+        'type': __trans_type(find('//dl[@class="resource_box_dl"]/dt/img').get_attribute('src')),
         'tag': find('//a[@class="tag"]').text.strip(),
         'coin': coin,
         'stars': find_count('//span[@class="starts"]//i[@class="fa fa-star yellow"]'),
