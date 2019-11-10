@@ -93,6 +93,8 @@ async def handle_msg_group(context):
     qq_group = '-1'
     if 'group_id' in context:
         qq_group = str(context['group_id'])
+    if qq_group != -1 and qq_group not in config.group_list:
+        return
 
     if cmd == '-help' or cmd == '-?':
         msg = '● 个人信息　-personal'
