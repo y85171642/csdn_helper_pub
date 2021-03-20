@@ -16,7 +16,7 @@ Hypercorn==0.5.4
 hyperframe==5.2.0
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.10.1
+Jinja2==2.11.3
 macholib==1.11
 MarkupSafe==1.1.1
 multidict==4.5.2
